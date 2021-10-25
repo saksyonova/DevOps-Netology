@@ -1,2 +1,10 @@
 # DevOps-Netology
-adding the first line"adding the second line" 
+adding the first line"adding the second line"
+
+в Terraform.gitignore будут игнорироваться:
+1. все локальные подкаталоги .terraform-а;
+2. файлы .tfstate;
+3. логи crash;
+4. файлы с расширением .tfvars;
+5. файлы override.tf и override.tf.json от перезаписи;
+6. файлы CLI-конфигурации .terraformrc и terraform.rc
