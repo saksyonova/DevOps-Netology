@@ -1,5 +1,7 @@
 # DevOps-Netology
-adding the first line"adding the second line"
+adding the first line
+adding the second line
+and the third line
 
 в Terraform.gitignore будут игнорироваться:
 1. все локальные подкаталоги .terraform-а;
