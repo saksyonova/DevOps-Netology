@@ -1,50 +1,57 @@
 # DevOps-Netology
+ДЗ по блоку "Работа в терминале 1"
 
-ДЗ по блоку "Инструменты Git":
+5. по умолчанию на ВМ выделены:
+RAM:1024mb
+CPU:2
+video:4mb
+HDD:64gb
 
-1. полный хэш и комментарий коммита, хэш которого начинается на aefea:
-# git show aefea ИЛИ git show aefea --stat
-aefead2207ef7e2aa5dc81a34aedf0cad4c32545
-Update CHANGELOG.md
+6. чтобы добавить оперативки или ресурсов, нужно добавить записи в конфигурацию Vagrantfile, например:
+config.vm.provider "virtualbox" do |v|
+  v.memory = 2048
+  v.cpus = 4
+end
 
-2. какому тегу соответствует коммит 85024d3:
-# git show 85924d3 ИЛИ git show 85924d3 --stat
-tag: v0.12.23
+8. длину журнала history можно задать переменными HISTFILESIZE (максимальное число строк в файле истории для сохранения, строка 1155) или HISTSIZE (число команд для сохранения, строка 1178).
 
-3. кол-во родителей у коммита b8d720 и их хэши:
-# git log --pretty=%P -n 1 b8d720
-56cd7859e05c36c06b56d013b55a252d0bb7e158
-9ea88f22fc6269854151c571162c5bcf958bee2b
+директива ignoreboth является сокращением для ignorespace и ignoredups:
+	ignorespace - не сохранять команды, начинающиеся с пробела;
+    ignoredups - не сохранять команду, если такая уже имеется в истории.
+	
+9. {} - зарезервированные слова, список, в т.ч. список команд команд;
+в отличии от "(...)" исполняется в текущем инстансе; 
+используется в различных условных циклах, условных операторах, или ограничивает тело функции;
+в командах выполняет подстановку элементов из списка (цикличное выполнение команд с подстановкой).
+например, mkdir ./DIR_{A..Z} - создаст каталоги с именами DIR_A, DIR_B и т. п. до DIR_Z.
+строка 343
 
-4. хэши и комментарии всех коммитов, которые были сделаны между тегами v0.12.23 и v0.12.24:
-# git log --pretty=format:"%H %s" v0.12.23..v0.12.24
-33ff1c03bb960b332be3af2e333462dde88b279e v0.12.24
-b14b74c4939dcab573326f4e3ee2a62e23e12f89 [Website] vmc provider links
-3f235065b9347a758efadc92295b540ee0a5e26e Update CHANGELOG.md
-6ae64e247b332925b872447e9ce869657281c2bf registry: Fix panic when server is unreachable
-5c619ca1baf2e21a155fcdb4c264cc9e24a2a353 website: Remove links to the getting started guide's old location
-06275647e2b53d97d4f0a19a0fec11f6d69820b5 Update CHANGELOG.md
-d5f9411f5108260320064349b757f55c09bc4b80 command: Fix bug when using terraform login on Windows
-4b6d06cc5dcb78af637bbb19c198faff37a066ed Update CHANGELOG.md
-dd01a35078f040ca984cdd349f18d0b67e486c35 Update CHANGELOG.md
-225466bc3e5f35baa5d07197bbc079345b77525e Cleanup after v0.12.23 release
+10. создать в текущей директории определённое кол-во файлов:
+touch {000001..100000}.txt
+300000 файлов рискнуть не решилась!
 
-5. коммит, в котором была создана функция func providerSource:
-# git log -S "func providerSource(" --pretty=format:"%h, %an, %s"
-8c928e835, Martin Atkins, main: Consult local directories as potential mirrors of providers
+11. конструкция [[ -d /tmp ]] проверяет условие у "-d /tmp" и возвращает её статус (0 или 1) + само наличие каталога /tmp.
 
-6. все коммиты, где была изменена функция globalPluginDirs:
-# сначала узнаём, в каком файле эта функция была импортирована изначально через git grep -p "globalPluginDirs"
-plugins.go=import ( ...
+например:
 
-# затем по этому файлу ищем все изменения по ней через git log -L :globalPluginDirs:plugins.go -s
-78b12205587fe839f10d946ea3fdc06719decb05
-52dbf94834cb970b510f2fba853a5b49ad9b1a46
-41ab0aef7a0fe030e84018973a64135b11abcd70
-66ebff90cdfaa6938f26f908c7ebad8d547fea17
-8364383c359a6b738a436d1b7745ccdce178df47
+	if [[ -d /tmp ]]
+	then
+		echo "каталог есть"
+	else
+		echo "каталога нет"
+	fi
+	
+12. добиваемся в вывод type -a нужную инфу:
+vagrant@vagrant:/$ mkdir /tmp/new_path_dir/
+vagrant@vagrant:/$ cp /bin/bash /tmp/new_path_dir/
+vagrant@vagrant:/$ PATH=/tmp/new_path_dir/:$PATH
+vagrant@vagrant:/$ type -a bash
+bash is /tmp/new_path_dir/bash
+bash is /usr/bin/bash
+bash is /bin/bash
 
-7. узнаём автора функции synchromizedWriters:
-# git log -SsynchronizedWriters --oneline --pretty=format:"%h %ad %an"
-# получаем 3 результата, по первому по дате определяем автора:
-Martin Atkins
+13. разница в планировании команд с помощью batch и at отличается в том, что:
+at - запускает команду в определённое указанное в параметре время;
+batch - запускается, когда уровень загрузки системы снижается ниже определённого уровня.
+
+14. завершаем работу через vagrant suspend.
