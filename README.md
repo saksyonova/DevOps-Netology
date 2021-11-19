@@ -1,83 +1,84 @@
 # DevOps-Netology
-ДЗ "Работа в терминале 2":
+ДЗ "ОС 1":
 
-1. type -a cd
-cd - это встроенная в оболочку команда, меняет текущий каталог только для оболочки, в которой выполняется.
-теоретически, ничто не мешает исполнителю shell реализовать её, как внешнюю команду, но работать она будет со своим окружением, и менять каталог внутри уже своего окружения, а на shell, вызвавший её, влиять не будет.
+1. 	vagrant@vagrant:~$ strace /bin/bash -c 'cd /tmp'
 
-2. grep <some_string> <some_file> | wc -l
-альтернатива: grep <some_string> <some_file> -c
+-с - подсчитывает кол-во ошибок, вызовов и времени выполнения для каждого системного вызова
+	
+	...
+chdir("/tmp")
 
-3. pstree -p
-родительский процесс с PID(1) - это процесс systemd.
+2. команда file позволяет узнать тип данных, которые на самом деле содержатся внутри документа.
 
-4. открываем две сессии: /dev/pts/0 и /dev/pts/1
-vagrant@vagrant:/dev/pts$ who
-vagrant  pts/0        2021-11-15 16:20 (10.0.2.2)
-vagrant  pts/1        2021-11-15 17:56 (10.0.2.2)
+vagrant@vagrant:~$ strace filestrace file
+...
+/usr/share/misc/magic.mgc - база типов.
 
-выполняя действия в первой сессии, выполняем "ls %" и ошибку выводим во вторую сессию:
-vagrant@vagrant:~$ ls % 2>/dev/pts/1
-в первой сессии ничего не происходит, зато во второй вывелась ошибка, которую и ожидали:
-vagrant@vagrant:~$ ls: cannot access '%': No such file or directory
+3. пробуем отредактировать, а затем удалить существующий в /home/vagrant файлик tmp.txt:
+vagrant@vagrant:~$ rm -fr tmp.txt
+	
+проверяем его в процессах через lsof:
+vagrant@vagrant:~$ lsof | grep tmp.txt
+	cat     2589      vagrant     1w     REG     253,0     47     131094     /home/vagrant/tmp.txt (deleted)
 
-5. передаём одновременно команде файл на stdin (test_2) и сразу выводим её stdout в другой файл (test_3): 
-vagrant@vagrant:~$ cat >> test_2
-new lines here
-vagrant@vagrant:~$ cat test_2
-new lines here
-vagrant@vagrant:~$ cat test_3
-cat: test_3: No such file or directory
-vagrant@vagrant:~$ cat <test_2 >test_3
-vagrant@vagrant:~$ cat test_3
-new lines here
+нам нужен PID (2589) и файловый дескриптор (1w) процесса cat
+	
+пробуем обнулить открытый удалённый файл:
+vagrant@vagrant:~$ echo '' >/proc/2589/fd/1
 
-6. просмотреть выводимые данные возможно только в случае непосредственного подключения к tty. удалось это сделать через Oracle VM VBox.
-проверяем подключения в shell:
-vagrant@vagrant:~$ who
-vagrant  tty1         2021-11-15 20:43
-vagrant  pts/0        2021-11-15 20:42 (10.0.2.2)
+4. 	зомби - это фантомный процесс, который просто имеет запись в таблице процессов, но при этом никакие ресурсы, кроме пространства таблицы процессов, не используются.
 
-выводим что-нибудь в tty1:
-vagrant@vagrant:~$ echo hey you >/dev/tty1
-в окне tty1 видим:
-vagrant@vagrant:~$ hey you
+5. устанавливаем утилиту opensnoop (нужна для трассировки):
+vagrant@vagrant:~$ sudo apt-get update
+vagrant@vagrant:~$ sudo apt-get install bpfcc-tools
+	
+выполняем:
+vagrant@vagrant:~$ dpkg -L bpfcc-tools | grep sbin/opensnoop
+/usr/sbin/opensnoop-bpfcc
 
-7. bash 5>&1 создаёт декскриптор (5) и перенаправляет его в stdout (1).
-echo netology > /proc/$$/fd/5 выведет netology в дескриптор 5, который был перенаправлен в stdout.
-если бы мы просто выполнили сначала echo netology > /proc/$$/fd/5 (или в новой сессии), то получили бы ошибку, так как такого дескриптора на данный момент нет:
-vagrant@vagrant:~$ echo netology > /proc/$$/fd/5
--bash: /proc/1360/fd/5: No such file or directory
+переключаемся на рута и выполняем:
+root@vagrant:~# /usr/sbin/opensnoop-bpfcc
+PID    COMM               FD ERR PATH
+393    systemd-udevd      14   0 /sys/fs/cgroup/unified/system.slice/systemd-udevd.service/cgroup.procs
+393    systemd-udevd      14   0 /sys/fs/cgroup/unified/system.slice/systemd-udevd.service/cgroup.threads
+1      systemd            21   0 /proc/398/cgroup
+802    vminfo              4   0 /var/run/utmp
+584    dbus-daemon        -1   2 /usr/local/share/dbus-1/system-services
+584    dbus-daemon        18   0 /usr/share/dbus-1/system-services
+584    dbus-daemon        -1   2 /lib/dbus-1/system-services
+…
 
-8. попробуем вывести и перенаправить вывод ошибки при выполнении "ls %", а также посчитаем, сколько раз встретится нам слово "access" (проверим на дублирование/потерю инфы):
-vagrant@vagrant:~$ ls % 6>&2 2>&1 1>&6 | grep cannot -c
-1
-6>&2 - новый дескриптор перенаправили в stderr (2); 
-2>&1 - stderr (2) перенаправили в stdout (1);
-1>&6 - stdout (1) перенаправили в новый дескриптор.
+6. команда uname отображает системную инфу, включая архитектуру ядра Linux, версию имени и выпуск:
+vagrant@vagrant:~$ uname -a
+Linux vagrant 5.4.0-80-generic #90-Ubuntu SMP Fri Jul 9 22:49:44 UTC 2021 x86_64 x86_64 x86_64 GNU/Linux
 
-9. cat /proc/$$/environ выведет информацию о переменных окружения.
-более структурировано можно посмотреть через printenv или env.
+цитата из мана:
+NOTES
+…
+Part of the utsname information is also accessible via /proc/sys/kernel/{ostype, hostname, osrelease, version, domainname}. 
 
-10. /proc/[pid]/cmdline - полная командная строка запуска процесса, кроме тех процессов, которые стали зомби;
-/proc/[pid]/exe - фактическое полное имя выполняемого файла. конечно, может использоваться обычным образом - открывать исполняемые файлы.
+7. ; - разделитель последовательных команд;
+&& - используется для объединения команд таким образом, что следующая команда запускается только когда предыдущая команда завершилась без ошибок (с кодом возврата 0).
+	test -d /tmp/some_dir; echo Hi - команда test не выполняется, поэтому следом выполняется команда echo;
 
-11. grep sse /proc/cpuinfo
-кажется, SSE4_2.
+	test -d /tmp/some_dir && echo Hi - команда test не выполняется, следовательно, не выполняется и команда echo.
+		
 
-12. сообщение "not a tty" возникает потому, что при подключении ожидается пользователь, а не другой процесс. для запуска можно указать -t и команда принудительно создаёт pty.
+set -e прерывает выполнение, если команда имеет ненулевой статус.
 
-13. reptyr сначала не была даже установлена, исправляем:
-sudo apt-get update
-sudo apt-get install reptyr
+"&&" использовать вместе с "set -e", кажется, не имеет смысла.
 
-vagrant@vagrant:~$ ps -a
-   PID TTY          TIME CMD
-   1301 pts/1    00:00:00 bash
-   1584	pts/2	 00:00:00 screen
-   1667 pts/3    00:00:00 top
-   2144	pts/4	 00:00:00 ps
-   
-удалось перехватить через sudo reptyr -T 1667.
+8. vagrant@vagrant:~$ help set
+	-e - прерывает выполнение, если команда имеет ненулевой статус;
+	-u - не установленные/не заданные параметры и переменные считаются ошибками, будут записаны как стандартные ошибки, неинтерактивный вызов завершится;
+	-x - вывод команд и аргументов по мере их выполнения;
+	-o - опция - pipefail - устанавливает код выхода из конвейера равным таковому для самой верной команды для выхода с ненулевым статусом или равным нулю, если все команды конвейера завершаются успешно.
+		
+При использовании для сценариев повышается детализация вывода ошибок (логирование). При наличии ошибок завершит сценарий на любом этапе, кроме последней завершающей команды.
 
-14. команда tee выводит одновременно и в файл, указанный в качестве параметра, и в stdout. в данном примере команда получает вывод из stdin, перенаправленный через pipe, от stdout команды echo. и так как команда запущена от sudo, имеет права на запись в файл.
+9. vagrant@vagrant:~$ ps -o stat
+Ss
+R+
+
+Ss - ожидающие завершения, спящие с прерыванием "сна";
+R+ - текущие активные процессы в фоновой группе.
