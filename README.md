@@ -43,13 +43,11 @@ Password:
 Description=Prometheus Node Exporter  
 Wants=network-online.target  
 After=network-online.target  
-  
 [Service]  
 User=node_exporter  
 Group=node_exporter  
 Type=simple  
 ExecStart=/usr/local/bin/node_exporter  
-  
 [Install]  
 WantedBy=multi-user.target  
 vagrant@vagrant:/etc/systemd/system$  
@@ -116,6 +114,7 @@ will not be shown, you would have to be root to see it all.)
   
 >vagrant@vagrant:~$ ulimit -Hn  
 1048576  
+
 это жёсткий лимит на пользователя, не может быть увеличен, только уменьшен.  
   
   
@@ -126,7 +125,8 @@ will not be shown, you would have to be root to see it all.)
 >root@vagrant:~# ps -e | grep sleep  
    3062 pts/2    00:00:00 sleep  
 
->root@vagrant:~# nsenter --target 3062 --pid --mount  
+>root@vagrant:~# nsenter --target 3062 --pid --mount 
+ 
 >root@vagrant:/# ps  
     PID TTY          TIME CMD  
    3046 pts/1    00:00:00 sudo  
