@@ -6,60 +6,53 @@
 >vagrant@vagrant:/tmp$ ps -e | grep node_exporter  
    4859 ?        00:00:00 node_exporter
 
+>vagrant@vagrant:/tmp$ systemctl stop node_exporter  
+==== AUTHENTICATING FOR org.freedesktop.systemd1.manage-units ===  
+Authentication is required to stop 'node_exporter.service'.  
+Authenticating as: vagrant... (vagrant)  
+Password:  
+==== AUTHENTICATION COMPLETE ===  
 
-vagrant@vagrant:/tmp$ systemctl stop node_exporter
-==== AUTHENTICATING FOR org.freedesktop.systemd1.manage-units ===
-Authentication is required to stop 'node_exporter.service'.
-Authenticating as: vagrant,,, (vagrant)
-Password:
-==== AUTHENTICATION COMPLETE ===
-'''
-'''
-vagrant@vagrant:/tmp$ ps -e | grep node_exporter
-'''
-'''
-vagrant@vagrant:/tmp$ systemctl start node_exporter
-==== AUTHENTICATING FOR org.freedesktop.systemd1.manage-units ===
-Authentication is required to start 'node_exporter.service'.
-Authenticating as: vagrant,,, (vagrant)
-Password:
-==== AUTHENTICATION COMPLETE ===
-'''
-'''
-vagrant@vagrant:/tmp$ ps -e | grep node_exporter
-   4923 ?        00:00:00 node_exporter
-'''
-'''
-vagrant@vagrant:/tmp$ systemctl restart node_exporter
-==== AUTHENTICATING FOR org.freedesktop.systemd1.manage-units ===
-Authentication is required to restart 'node_exporter.service'.
-Authenticating as: vagrant,,, (vagrant)
-Password:
-==== AUTHENTICATION COMPLETE ===
-'''
-'''
-vagrant@vagrant:/tmp$ ps -e | grep node_exporter
-   4955 ?        00:00:00 node_exporter
-'''
+>vagrant@vagrant:/tmp$ ps -e | grep node_exporter  
+
+>vagrant@vagrant:/tmp$ systemctl start node_exporter  
+==== AUTHENTICATING FOR org.freedesktop.systemd1.manage-units ===  
+Authentication is required to start 'node_exporter.service'.  
+Authenticating as: vagrant... (vagrant)  
+Password:  
+==== AUTHENTICATION COMPLETE ===  
+
+>vagrant@vagrant:/tmp$ ps -e | grep node_exporter  
+   4923 ?        00:00:00 node_exporter  
+
+>vagrant@vagrant:/tmp$ systemctl restart node_exporter  
+==== AUTHENTICATING FOR org.freedesktop.systemd1.manage-units ===  
+Authentication is required to restart 'node_exporter.service'.  
+Authenticating as: vagrant... (vagrant)  
+Password:  
+==== AUTHENTICATION COMPLETE ===  
+
+>vagrant@vagrant:/tmp$ ps -e | grep node_exporter  
+   4955 ?        00:00:00 node_exporter  
 
 создан конфигурационный файл node_exporter.service:
-'''
-vagrant@vagrant:/etc/systemd/system$ cat /etc/systemd/system/node_exporter.service
-[Unit]
-Description=Prometheus Node Exporter
-Wants=network-online.target
-After=network-online.target
 
-[Service]
-User=node_exporter
-Group=node_exporter
-Type=simple
-ExecStart=/usr/local/bin/node_exporter
+>vagrant@vagrant:/etc/systemd/system$ cat /etc/systemd/system/node_exporter.service  
+[Unit]  
+Description=Prometheus Node Exporter  
+Wants=network-online.target  
+After=network-online.target  
 
-[Install]
-WantedBy=multi-user.target
-vagrant@vagrant:/etc/systemd/system$
-'''
+[Service]  
+User=node_exporter  
+Group=node_exporter  
+Type=simple  
+ExecStart=/usr/local/bin/node_exporter  
+
+[Install]  
+WantedBy=multi-user.target  
+vagrant@vagrant:/etc/systemd/system$  
+
 
 2. знакомимся с опциями node_exporter и выводом /metrics:
 
