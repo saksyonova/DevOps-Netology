@@ -2,11 +2,11 @@
 **ДЗ "ОС 2"** *(наконец-то изучила синтаксис md-файлов! :whale2:)*
 
 1. сервис стартует и перезапускается без проблем:
-'''
-vagrant@vagrant:/tmp$ ps -e | grep node_exporter
-   4859 ?        00:00:00 node_exporter
-'''
-'''
+
+>vagrant@vagrant:/tmp$ ps -e | grep node_exporter
+>   4859 ?        00:00:00 node_exporter
+
+
 vagrant@vagrant:/tmp$ systemctl stop node_exporter
 ==== AUTHENTICATING FOR org.freedesktop.systemd1.manage-units ===
 Authentication is required to stop 'node_exporter.service'.
