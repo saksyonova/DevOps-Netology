@@ -1,84 +1,153 @@
-# DevOps-Netology
-ДЗ "ОС 1":
+## DevOps-Netology
+**ДЗ "ОС 2"** *(наконец-то изучила синтаксис md-файлов! :whale2:)*
 
-1. 	vagrant@vagrant:~$ strace /bin/bash -c 'cd /tmp'
+1. сервис стартует и перезапускается без проблем:
+'''
+vagrant@vagrant:/tmp$ ps -e | grep node_exporter
+   4859 ?        00:00:00 node_exporter
+'''
+'''
+vagrant@vagrant:/tmp$ systemctl stop node_exporter
+==== AUTHENTICATING FOR org.freedesktop.systemd1.manage-units ===
+Authentication is required to stop 'node_exporter.service'.
+Authenticating as: vagrant,,, (vagrant)
+Password:
+==== AUTHENTICATION COMPLETE ===
+'''
+'''
+vagrant@vagrant:/tmp$ ps -e | grep node_exporter
+'''
+'''
+vagrant@vagrant:/tmp$ systemctl start node_exporter
+==== AUTHENTICATING FOR org.freedesktop.systemd1.manage-units ===
+Authentication is required to start 'node_exporter.service'.
+Authenticating as: vagrant,,, (vagrant)
+Password:
+==== AUTHENTICATION COMPLETE ===
+'''
+'''
+vagrant@vagrant:/tmp$ ps -e | grep node_exporter
+   4923 ?        00:00:00 node_exporter
+'''
+'''
+vagrant@vagrant:/tmp$ systemctl restart node_exporter
+==== AUTHENTICATING FOR org.freedesktop.systemd1.manage-units ===
+Authentication is required to restart 'node_exporter.service'.
+Authenticating as: vagrant,,, (vagrant)
+Password:
+==== AUTHENTICATION COMPLETE ===
+'''
+'''
+vagrant@vagrant:/tmp$ ps -e | grep node_exporter
+   4955 ?        00:00:00 node_exporter
+'''
 
--с - подсчитывает кол-во ошибок, вызовов и времени выполнения для каждого системного вызова
-	
-	...
-chdir("/tmp")
+создан конфигурационный файл node_exporter.service:
+'''
+vagrant@vagrant:/etc/systemd/system$ cat /etc/systemd/system/node_exporter.service
+[Unit]
+Description=Prometheus Node Exporter
+Wants=network-online.target
+After=network-online.target
 
-2. команда file позволяет узнать тип данных, которые на самом деле содержатся внутри документа.
+[Service]
+User=node_exporter
+Group=node_exporter
+Type=simple
+ExecStart=/usr/local/bin/node_exporter
 
-vagrant@vagrant:~$ strace filestrace file
-...
-/usr/share/misc/magic.mgc - база типов.
+[Install]
+WantedBy=multi-user.target
+vagrant@vagrant:/etc/systemd/system$
+'''
 
-3. пробуем отредактировать, а затем удалить существующий в /home/vagrant файлик tmp.txt:
-vagrant@vagrant:~$ rm -fr tmp.txt
-	
-проверяем его в процессах через lsof:
-vagrant@vagrant:~$ lsof | grep tmp.txt
-	cat     2589      vagrant     1w     REG     253,0     47     131094     /home/vagrant/tmp.txt (deleted)
+2. знакомимся с опциями node_exporter и выводом /metrics:
 
-нам нужен PID (2589) и файловый дескриптор (1w) процесса cat
-	
-пробуем обнулить открытый удалённый файл:
-vagrant@vagrant:~$ echo '' >/proc/2589/fd/1
-
-4. 	зомби - это фантомный процесс, который просто имеет запись в таблице процессов, но при этом никакие ресурсы, кроме пространства таблицы процессов, не используются.
-
-5. устанавливаем утилиту opensnoop (нужна для трассировки):
-vagrant@vagrant:~$ sudo apt-get update
-vagrant@vagrant:~$ sudo apt-get install bpfcc-tools
-	
-выполняем:
-vagrant@vagrant:~$ dpkg -L bpfcc-tools | grep sbin/opensnoop
-/usr/sbin/opensnoop-bpfcc
-
-переключаемся на рута и выполняем:
-root@vagrant:~# /usr/sbin/opensnoop-bpfcc
-PID    COMM               FD ERR PATH
-393    systemd-udevd      14   0 /sys/fs/cgroup/unified/system.slice/systemd-udevd.service/cgroup.procs
-393    systemd-udevd      14   0 /sys/fs/cgroup/unified/system.slice/systemd-udevd.service/cgroup.threads
-1      systemd            21   0 /proc/398/cgroup
-802    vminfo              4   0 /var/run/utmp
-584    dbus-daemon        -1   2 /usr/local/share/dbus-1/system-services
-584    dbus-daemon        18   0 /usr/share/dbus-1/system-services
-584    dbus-daemon        -1   2 /lib/dbus-1/system-services
-…
-
-6. команда uname отображает системную инфу, включая архитектуру ядра Linux, версию имени и выпуск:
-vagrant@vagrant:~$ uname -a
-Linux vagrant 5.4.0-80-generic #90-Ubuntu SMP Fri Jul 9 22:49:44 UTC 2021 x86_64 x86_64 x86_64 GNU/Linux
-
-цитата из мана:
-NOTES
-…
-Part of the utsname information is also accessible via /proc/sys/kernel/{ostype, hostname, osrelease, version, domainname}. 
-
-7. ; - разделитель последовательных команд;
-&& - используется для объединения команд таким образом, что следующая команда запускается только когда предыдущая команда завершилась без ошибок (с кодом возврата 0).
-	test -d /tmp/some_dir; echo Hi - команда test не выполняется, поэтому следом выполняется команда echo;
-
-	test -d /tmp/some_dir && echo Hi - команда test не выполняется, следовательно, не выполняется и команда echo.
+CPU: curl http://localhost:9100/metrics | grep cpu 
+	node_cpu_seconds_total{cpu="0",mode="idle"} 24627.48
+	node_cpu_seconds_total{cpu="0",mode="iowait"} 7.59
+	node_cpu_seconds_total{cpu="0",mode="system"} 24.14
+	node_cpu_seconds_total{cpu="0",mode="user"} 47.87
 		
+	node_cpu_seconds_total{cpu="1",mode="idle"} 24609.03
+	node_cpu_seconds_total{cpu="1",mode="iowait"} 5.51
+	node_cpu_seconds_total{cpu="1",mode="system"} 22.7
+	node_cpu_seconds_total{cpu="1",mode="user"} 53
 
-set -e прерывает выполнение, если команда имеет ненулевой статус.
-
-"&&" использовать вместе с "set -e", кажется, не имеет смысла.
-
-8. vagrant@vagrant:~$ help set
-	-e - прерывает выполнение, если команда имеет ненулевой статус;
-	-u - не установленные/не заданные параметры и переменные считаются ошибками, будут записаны как стандартные ошибки, неинтерактивный вызов завершится;
-	-x - вывод команд и аргументов по мере их выполнения;
-	-o - опция - pipefail - устанавливает код выхода из конвейера равным таковому для самой верной команды для выхода с ненулевым статусом или равным нулю, если все команды конвейера завершаются успешно.
 		
-При использовании для сценариев повышается детализация вывода ошибок (логирование). При наличии ошибок завершит сценарий на любом этапе, кроме последней завершающей команды.
+	process_cpu_seconds_total 0.21
 
-9. vagrant@vagrant:~$ ps -o stat
-Ss
-R+
+memory: curl http://localhost:9100/metrics | grep memory
+	node_memory_MemAvailable_bytes 7.06052096e+08
+	node_memory_MemFree_bytes 1.8579456e+08
+	node_memory_MemTotal_bytes 1.028694016e+09
+		
+disk (их несколько, выбрали sda): curl http://localhost:9100/metrics | grep disk
+	node_disk_io_time_seconds_total{device="sda"} 27.056
+	node_disk_read_time_seconds_total{device="sda"} 6.684
+	node_disk_write_time_seconds_total{device="sda"} 56.715
+		
+network: curl http://localhost:9100/metrics | grep network
+	node_network_receive_errs_total{device="eth0"} 0
+	node_network_receive_errs_total{device="lo"} 0
+	
+	node_network_receive_packets_total{device="eth0"} 53189
+	node_network_receive_packets_total{device="lo"} 313
+	
+	node_network_transmit_bytes_total{device="eth0"} 1.83348e+06
+	node_network_transmit_bytes_total{device="lo"} 383553
+	
+	node_network_transmit_errs_total{device="eth0"} 0
+	node_network_transmit_errs_total{device="lo"} 0
 
-Ss - ожидающие завершения, спящие с прерыванием "сна";
-R+ - текущие активные процессы в фоновой группе.
+3. после всей настройки проверяем статус, метрики изучены:
+	vagrant@vagrant:~$ netstat -ap | grep 19999
+	(Not all processes could be identified, non-owned process info
+	 will not be shown, you would have to be root to see it all.)
+	tcp        0      0 0.0.0.0:19999           0.0.0.0:*               LISTEN      -
+	tcp6       0      0 [::]:19999              [::]:*                  LISTEN      -
+
+4. да, можно:
+vagrant@vagrant:~$ dmesg | grep virtual
+[    0.003610] CPU MTRRs all blank - virtualized system.
+[    0.103912] Booting paravirtualized kernel on KVM
+[    3.173605] systemd[1]: Detected virtualization oracle.
+
+5. 
+vagrant@vagrant:~$ /sbin/sysctl -n fs.nr_open
+1048576
+это максимальное число открытых дескрипторов для системы.
+
+общесистемное ограничение на количество открытых файлов для всех процессов можно узнать так:
+vagrant@vagrant:~$ cat /proc/sys/fs/file-max
+9223372036854775807
+
+vagrant@vagrant:~$ ulimit -Hn
+1048576
+это жёсткий лимит на пользователя, не может быть увеличен, только уменьшен.
+
+6. запускаем sleep:
+root@vagrant:~$ sleep 10m
+
+в другой сессии выполняем:
+root@vagrant:~# ps -e | grep sleep
+   3062 pts/2    00:00:00 sleep
+root@vagrant:~# nsenter --target 3062 --pid --mount
+root@vagrant:/# ps
+    PID TTY          TIME CMD
+   3046 pts/1    00:00:00 sudo
+   3048 pts/1    00:00:00 bash
+   3066 pts/1    00:00:00 nsenter
+   3067 pts/1    00:00:00 bash
+   3076 pts/1    00:00:00 ps
+
+7. команда :(){ :|:& };: породит процессы kernel до смерти: 
+определяется функция с именем : , которая вызывает себя дважды (код: : | : ).
+и всё это происходит в фоновом режиме ( & ). 
+после ; определение функции выполнено, и функция : запускается.
+таким образом, каждый экземпляр : начинает два новых : и так далее.
+
+система в пользовательской зоне ресурсов имеет определённое ограничение на создаваемые ресурсы,
+поэтому при превышении начинает блокировать процессы. 
+
+но если установить ulimit -u 50, то число процессов будет ограниченно до 50 для пользователя. 
