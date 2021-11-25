@@ -279,7 +279,7 @@ mdadm: set /dev/sdb1 faulty in /dev/md1
      Spare Devices : 0  
 ... 
 Consistency Policy : resync  
-  
+...
               Name : vagrant:1  (local to host vagrant)  
               UUID : 5f778c03:03c9fa1f:76ba81a9:930cfa2a  
             Events : 19  
