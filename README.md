@@ -27,13 +27,13 @@ Device     Boot   Start     End Sectors  Size Id Type
 5. используя sfdisk, пробуем перенести данную таблицу разделов на второй диск:  
 >root@vagrant:~# sfdisk -d /dev/sdb | sfdisk --force /dev/sdc  
 Checking that no-one is using this disk right now ... OK  
-  
+...
 Disk /dev/sdc: 2.51 GiB, 2684354560 bytes, 5242880 sectors  
 Disk model: VBOX HARDDISK  
 Units: sectors of 1 * 512 = 512 bytes  
 Sector size (logical/physical): 512 bytes / 512 bytes  
 I/O size (minimum/optimal): 512 bytes / 512 bytes  
-  
+...
 >>> Script header accepted.  
 >>> Script header accepted.  
 >>> Script header accepted.  
@@ -42,15 +42,15 @@ I/O size (minimum/optimal): 512 bytes / 512 bytes
 /dev/sdc1: Created a new partition 1 of type 'Linux' and of size 2 GiB.  
 /dev/sdc2: Created a new partition 2 of type 'Linux' and of size 511 MiB.  
 /dev/sdc3: Done.  
-  
+...
 New situation:  
 Disklabel type: dos  
 Disk identifier: 0xdbec7206  
-  
+...
 Device     Boot   Start     End Sectors  Size Id Type  
 /dev/sdc1          2048 4196351 4194304    2G 83 Linux  
 /dev/sdc2       4196352 5242879 1046528  511M 83 Linux  
-  
+...
 The partition table has been altered.  
 Calling ioctl() to re-read partition table.  
 Syncing disks.  
@@ -64,7 +64,7 @@ Sector size (logical/physical): 512 bytes / 512 bytes
 I/O size (minimum/optimal): 512 bytes / 512 bytes  
 Disklabel type: dos  
 Disk identifier: 0xdbec7206  
-  
+...
 Device     Boot   Start     End Sectors  Size Id Type  
 /dev/sdb1          2048 4196351 4194304    2G 83 Linux  
 /dev/sdb2       4196352 5242879 1046528  511M 83 Linux  
@@ -77,7 +77,7 @@ Sector size (logical/physical): 512 bytes / 512 bytes
 I/O size (minimum/optimal): 512 bytes / 512 bytes  
 Disklabel type: dos  
 Disk identifier: 0xdbec7206  
-  
+...
 Device     Boot   Start     End Sectors  Size Id Type  
 /dev/sdc1          2048 4196351 4194304    2G 83 Linux  
 /dev/sdc2       4196352 5242879 1046528  511M 83 Linux  
@@ -107,7 +107,7 @@ mdadm: Defaulting to version 1.2 metadata
 mdadm: array /dev/md0 started.  
   
 проверяем, что получилось:  
-root@vagrant:~# lsblk  
+>root@vagrant:~# lsblk  
 NAME                 MAJ:MIN RM  SIZE RO TYPE  MOUNTPOINT  
 sda                    8:0    0   64G  0 disk  
 ├─sda1                 8:1    0  512M  0 part  /boot/efi  
@@ -157,7 +157,7 @@ sdc                    8:32   0  2.5G  0 disk
   Alloc PE / Size       16255 / <63.50 GiB  
   Free  PE / Size       0 / 0  
   VG UUID               PaBfZ0-3I0c-iIdl-uXKt-JL4K-f4tT-kzfcyE  
-  
+...
   --- Volume group ---  
   VG Name               vg1  
   System ID  
@@ -199,7 +199,7 @@ sdc                    8:32   0  2.5G  0 disk
 >root@vagrant:~# mkfs.ext4 /dev/vg1/lvol0  
 mke2fs 1.45.5 (07-Jan-2020)  
 Creating filesystem with 25600 4k blocks and 25600 inodes  
-  
+...
 Allocating group tables: done  
 Writing inode tables: done  
 Creating journal (1024 blocks): done  
@@ -219,9 +219,9 @@ Connecting to mirror.yandex.ru (mirror.yandex.ru)|213.180.204.183|:443... connec
 HTTP request sent, awaiting response... 200 OK  
 Length: 22581153 (22M) [application/octet-stream]  
 Saving to: ‘/tmp/new/test.gz’  
-  
+...
 /tmp/new/test.gz         100%[==================================>]  21.53M  3.05MB/s    in 6.6s  
-  
+...
 2021-11-25 19:25:17 (3.25 MB/s) - ‘/tmp/new/test.gz’ saved [22581153/22581153]  
   
 14. итоговый вывод lsblk:  
@@ -247,8 +247,8 @@ sdc                    8:32   0  2.5G  0 disk
     └─vg1-lvol0      253:2    0  100M  0 lvm   /tmp/new  
   
 15. тестируем целостность файла:  
->root@vagrant:~# gzip -t /tmp/new/test.gz  
-root@vagrant:~# echo $?  
+>root@vagrant: # gzip -t /tmp/new/test.gz  
+root@vagrant: # echo $?  
 0  
   
 16. используя pvmove, перемещаем содержимое PV с RAID0 на RAID1:  
@@ -270,24 +270,23 @@ mdadm: set /dev/sdb1 faulty in /dev/md1
       Raid Devices : 2  
      Total Devices : 2  
        Persistence : Superblock is persistent  
-  
+... 
        Update Time : Thu Nov 25 19:34:13 2021  
              State : clean, degraded  
     Active Devices : 1  
    Working Devices : 1  
     Failed Devices : 1  
      Spare Devices : 0  
-  
+... 
 Consistency Policy : resync  
   
               Name : vagrant:1  (local to host vagrant)  
               UUID : 5f778c03:03c9fa1f:76ba81a9:930cfa2a  
             Events : 19  
-  
+...
     Number   Major   Minor   RaidDevice State  
        -       0        0        0      removed  
        1       8       33        1      active sync   /dev/sdc1  
-  
        0       8       17        -      faulty   /dev/sdb1  
 
 18. убеждаемся через вывод dmesg, что RAID1 работает в деградированном состоянии:
@@ -301,12 +300,12 @@ Consistency Policy : resync
                md/raid1:md1: Operation continuing on 1 devices.  
   
 19. тестируем целостность файла, несмотря на "сбойный" диск он должен быть доступен:  
->root@vagrant:~# gzip -t /tmp/new/test.gz  
-root@vagrant:~# echo $?  
+>root@vagrant: # gzip -t /tmp/new/test.gz  
+root@vagrant: # echo $?  
 0  
   
-20. гасим тестовый хост:
->PS C:\Users\skuznetsova> vagrant destroy
-    default: Are you sure you want to destroy the 'default' VM? [y/N] y
-==> default: Forcing shutdown of VM...
-==> default: Destroying VM and associated drives...
+20. гасим тестовый хост:  
+>PS C:\Users\skuznetsova> vagrant destroy  
+    default: Are you sure you want to destroy the 'default' VM? [y/N] y  
+==> default: Forcing shutdown of VM...  
+==> default: Destroying VM and associated drives...  
