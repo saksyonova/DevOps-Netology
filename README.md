@@ -1,311 +1,224 @@
 ## DevOps-Netology
-**ДЗ "Файловые системы"** :whale2:
+**ДЗ "Компьютерные сети 1"** :whale2:
 
-1. разрежённые файлы используются для сжатия данных на уровне ФС (экономия дискового пространства). 
-
-2. из лекции стало понятно, что hardlink - это, по сути, ссылка на один и тот же файл, имеет один и тот же inode, соответственно, одни и те же права доступа и владельца. НО, наверно, если, к примеру, 2 файла, имеющих hl, лежат в разных директориях, на одну из которых есть ограничение прав доступа, то файл, лежащий под ограничениями может быть недоступен, в то время как в доступном каталоге - всё ок.
-
-3. подняли новый инстанс по указанному содержимому Vagrantfile:  
->vagrant@vagrant:~$ lsblk  
-NAME                 MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT  
-sda                    8:0    0   64G  0 disk  
-├─sda1                 8:1    0  512M  0 part /boot/efi  
-├─sda2                 8:2    0    1K  0 part  
-└─sda5                 8:5    0 63.5G  0 part  
-  ├─vgvagrant-root   253:0    0 62.6G  0 lvm  /  
-  └─vgvagrant-swap_1 253:1    0  980M  0 lvm  [SWAP]  
-sdb                    8:16   0  2.5G  0 disk  
-sdc                    8:32   0  2.5G  0 disk  
-  
-4. разбиваем под рутом первый диск на 2 раздела (2 гига и оставшееся пространство):  
->fdisk /dev/sdb  
-...  
-Device     Boot   Start     End Sectors  Size Id Type  
-/dev/sdb1          2048 4196351 4194304    2G 83 Linux  
-/dev/sdb2       4196352 5242879 1046528  511M 83 Linux  
-  
-5. используя sfdisk, пробуем перенести данную таблицу разделов на второй диск:  
->root@vagrant:~# sfdisk -d /dev/sdb | sfdisk --force /dev/sdc  
-Checking that no-one is using this disk right now ... OK  
-...
-Disk /dev/sdc: 2.51 GiB, 2684354560 bytes, 5242880 sectors  
-Disk model: VBOX HARDDISK  
-Units: sectors of 1 * 512 = 512 bytes  
-Sector size (logical/physical): 512 bytes / 512 bytes  
-I/O size (minimum/optimal): 512 bytes / 512 bytes  
-...
->>> Script header accepted.  
->>> Script header accepted.  
->>> Script header accepted.  
->>> Script header accepted.  
->>> Created a new DOS disklabel with disk identifier 0xdbec7206.  
-/dev/sdc1: Created a new partition 1 of type 'Linux' and of size 2 GiB.  
-/dev/sdc2: Created a new partition 2 of type 'Linux' and of size 511 MiB.  
-/dev/sdc3: Done.  
-...
-New situation:  
-Disklabel type: dos  
-Disk identifier: 0xdbec7206  
-...
-Device     Boot   Start     End Sectors  Size Id Type  
-/dev/sdc1          2048 4196351 4194304    2G 83 Linux  
-/dev/sdc2       4196352 5242879 1046528  511M 83 Linux  
-...
-The partition table has been altered.  
-Calling ioctl() to re-read partition table.  
-Syncing disks.  
-    
-проверяем результат:  
->root@vagrant:~# /sbin/fdisk -l /dev/sdb  
-Disk /dev/sdb: 2.51 GiB, 2684354560 bytes, 5242880 sectors  
-Disk model: VBOX HARDDISK  
-Units: sectors of 1 * 512 = 512 bytes  
-Sector size (logical/physical): 512 bytes / 512 bytes  
-I/O size (minimum/optimal): 512 bytes / 512 bytes  
-Disklabel type: dos  
-Disk identifier: 0xdbec7206  
-...
-Device     Boot   Start     End Sectors  Size Id Type  
-/dev/sdb1          2048 4196351 4194304    2G 83 Linux  
-/dev/sdb2       4196352 5242879 1046528  511M 83 Linux  
-  
->root@vagrant:~# /sbin/fdisk -l /dev/sdc  
-Disk /dev/sdc: 2.51 GiB, 2684354560 bytes, 5242880 sectors  
-Disk model: VBOX HARDDISK  
-Units: sectors of 1 * 512 = 512 bytes  
-Sector size (logical/physical): 512 bytes / 512 bytes  
-I/O size (minimum/optimal): 512 bytes / 512 bytes  
-Disklabel type: dos  
-Disk identifier: 0xdbec7206  
-...
-Device     Boot   Start     End Sectors  Size Id Type  
-/dev/sdc1          2048 4196351 4194304    2G 83 Linux  
-/dev/sdc2       4196352 5242879 1046528  511M 83 Linux  
-  
-6. собираем через mdadm RAID1 на паре разделов, которые по 2 гига:  
->root@vagrant:~# mdadm --create --verbose /dev/md1 -l 1 -n 2 /dev/sd{b1,c1}  
-mdadm: Note: this array has metadata at the start and  
-    may not be suitable as a boot device.  If you plan to  
-    store '/boot' on this device please ensure that  
-    your boot-loader understands md/v1.x metadata, or use  
-    --metadata=0.90  
-mdadm: size set to 2094080K  
-Continue creating array? y  
-mdadm: Defaulting to version 1.2 metadata  
-mdadm: array /dev/md1 started.  
-  
-7. собираем через mdadm RAID0 на второй паре маленьких разделов:  
->root@vagrant:~# mdadm --create --verbose /dev/md0 -l 1 -n 2 /dev/sd{b2,c2}  
-mdadm: Note: this array has metadata at the start and  
-    may not be suitable as a boot device.  If you plan to  
-    store '/boot' on this device please ensure that  
-    your boot-loader understands md/v1.x metadata, or use  
-    --metadata=0.90  
-mdadm: size set to 522240K  
-Continue creating array? y  
-mdadm: Defaulting to version 1.2 metadata  
-mdadm: array /dev/md0 started.  
-  
-проверяем, что получилось:  
->root@vagrant:~# lsblk  
-NAME                 MAJ:MIN RM  SIZE RO TYPE  MOUNTPOINT  
-sda                    8:0    0   64G  0 disk  
-├─sda1                 8:1    0  512M  0 part  /boot/efi  
-├─sda2                 8:2    0    1K  0 part  
-└─sda5                 8:5    0 63.5G  0 part  
-  ├─vgvagrant-root   253:0    0 62.6G  0 lvm   /  
-  └─vgvagrant-swap_1 253:1    0  980M  0 lvm   [SWAP]  
-sdb                    8:16   0  2.5G  0 disk  
-├─sdb1                 8:17   0    2G  0 part  
-│ └─md1                9:1    0    2G  0 raid1  
-└─sdb2                 8:18   0  511M  0 part  
-  └─md0                9:0    0  510M  0 raid1  
-sdc                    8:32   0  2.5G  0 disk  
-├─sdc1                 8:33   0    2G  0 part  
-│ └─md1                9:1    0    2G  0 raid1  
-└─sdc2                 8:34   0  511M  0 part  
-  └─md0                9:0    0  510M  0 raid1  
-  
-8. создаём 2 независимых PV на получившихся md-устройствах:  
->root@vagrant:~# pvcreate /dev/md1 /dev/md0  
-  Physical volume "/dev/md1" successfully created.  
-  Physical volume "/dev/md0" successfully created.  
-  
-9. создаём общую volume-группу на этих двух PV:  
->root@vagrant:~# vgcreate vg1 /dev/md1 /dev/md0  
-  Volume group "vg1" successfully created  
-    
-проверяем:  
-> root@vagrant:~# vgdisplay  
-  --- Volume group ---  
-  VG Name               vgvagrant  
-  System ID  
-  Format                lvm2  
-  Metadata Areas        1  
-  Metadata Sequence No  3  
-  VG Access             read/write  
-  VG Status             resizable  
-  MAX LV                0  
-  Cur LV                2  
-  Open LV               2  
-  Max PV                0  
-  Cur PV                1  
-  Act PV                1  
-  VG Size               <63.50 GiB  
-  PE Size               4.00 MiB  
-  Total PE              16255  
-  Alloc PE / Size       16255 / <63.50 GiB  
-  Free  PE / Size       0 / 0  
-  VG UUID               PaBfZ0-3I0c-iIdl-uXKt-JL4K-f4tT-kzfcyE  
-...
-  --- Volume group ---  
-  VG Name               vg1  
-  System ID  
-  Format                lvm2  
-  Metadata Areas        2  
-  Metadata Sequence No  1  
-  VG Access             read/write  
-  VG Status             resizable  
-  MAX LV                0  
-  Cur LV                0  
-  Open LV               0  
-  Max PV                0  
-  Cur PV                2  
-  Act PV                2  
-  VG Size               2.49 GiB  
-  PE Size               4.00 MiB  
-  Total PE              638  
-  Alloc PE / Size       0 / 0  
-  Free  PE / Size       638 / 2.49 GiB  
-  VG UUID               6Y89n3-ACvQ-fOoW-Wbs1-CelW-6BS5-Xzery7  
-  
-10. создаём LV, размером 100 мб, указав его расположение на PV с RAID0:  
->root@vagrant:~# lvcreate -L 100M vg1 /dev/md0  
-  Logical volume "lvol0" created.  
-  
-проверяем:  
->root@vagrant:~# vgs  
-  VG        #PV #LV #SN Attr   VSize   VFree  
-  vg1         2   1   0 wz--n-   2.49g 2.39g  
-  vgvagrant   1   2   0 wz--n- <63.50g    0  
-  
->root@vagrant:~# lvs  
-  LV     VG        Attr       LSize   Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert  
-  lvol0  vg1       -wi-a----- 100.00m  
-  root   vgvagrant -wi-ao---- <62.54g  
-  swap_1 vgvagrant -wi-ao---- 980.00m  
-  
-11. создаём mkfs.ext4 ФС на получившемся LV:  
->root@vagrant:~# mkfs.ext4 /dev/vg1/lvol0  
-mke2fs 1.45.5 (07-Jan-2020)  
-Creating filesystem with 25600 4k blocks and 25600 inodes  
-...
-Allocating group tables: done  
-Writing inode tables: done  
-Creating journal (1024 blocks): done  
-Writing superblocks and filesystem accounting information: done  
-  
-12. монтируем этот раздел в директорию /tmp/new. сначала создаём эту директорию:  
->root@vagrant:~# mkdir /tmp/new  
-  
-затем монтируем:  
->root@vagrant:~# mount /dev/vg1/lvol0 /tmp/new  
-  
-13. помещаем туда тестовый файл:  
->root@vagrant:~# wget https://mirror.yandex.ru/ubuntu/ls-lR.gz -O /tmp/new/test.gz  
---2021-11-25 19:25:10--  https://mirror.yandex.ru/ubuntu/ls-lR.gz  
-Resolving mirror.yandex.ru (mirror.yandex.ru)... 213.180.204.183, 2a02:6b8::183  
-Connecting to mirror.yandex.ru (mirror.yandex.ru)|213.180.204.183|:443... connected.  
-HTTP request sent, awaiting response... 200 OK  
-Length: 22581153 (22M) [application/octet-stream]  
-Saving to: ‘/tmp/new/test.gz’  
-...
-/tmp/new/test.gz         100%[==================================>]  21.53M  3.05MB/s    in 6.6s  
-...
-2021-11-25 19:25:17 (3.25 MB/s) - ‘/tmp/new/test.gz’ saved [22581153/22581153]  
-  
-14. итоговый вывод lsblk:  
->root@vagrant:~# lsblk  
-NAME                 MAJ:MIN RM  SIZE RO TYPE  MOUNTPOINT  
-sda                    8:0    0   64G  0 disk  
-├─sda1                 8:1    0  512M  0 part  /boot/efi  
-├─sda2                 8:2    0    1K  0 part  
-└─sda5                 8:5    0 63.5G  0 part  
-  ├─vgvagrant-root   253:0    0 62.6G  0 lvm   /  
-  └─vgvagrant-swap_1 253:1    0  980M  0 lvm   [SWAP]  
-sdb                    8:16   0  2.5G  0 disk  
-├─sdb1                 8:17   0    2G  0 part  
-│ └─md1                9:1    0    2G  0 raid1  
-└─sdb2                 8:18   0  511M  0 part  
-  └─md0                9:0    0  510M  0 raid1  
-    └─vg1-lvol0      253:2    0  100M  0 lvm   /tmp/new  
-sdc                    8:32   0  2.5G  0 disk  
-├─sdc1                 8:33   0    2G  0 part  
-│ └─md1                9:1    0    2G  0 raid1  
-└─sdc2                 8:34   0  511M  0 part  
-  └─md0                9:0    0  510M  0 raid1  
-    └─vg1-lvol0      253:2    0  100M  0 lvm   /tmp/new  
-  
-15. тестируем целостность файла:  
->root@vagrant: # gzip -t /tmp/new/test.gz  
-root@vagrant: # echo $?  
+1. вывод по запросу telnet stackoverflow.com 80:  
+>HTTP/1.1 301 Moved Permanently  
+cache-control: no-cache, no-store, must-revalidate  
+location: https://stackoverflow.com/questions  
+x-request-guid: 3768e80c-d856-455b-932b-f446460a861b  
+feature-policy: microphone 'none'; speaker 'none'  
+content-security-policy: upgrade-insecure-requests; frame-ancestors 'self' https://stackexchange.com  
+Accept-Ranges: bytes  
+Transfer-Encoding: chunked  
+Date: Sat, 27 Nov 2021 13:20:19 GMT  
+Via: 1.1 varnish  
+Connection: keep-alive  
+X-Served-By: cache-ams21080-AMS  
+X-Cache: MISS  
+X-Cache-Hits: 0  
+X-Timer: S1638019219.955237,VS0,VE76  
+Vary: Fastly-SSL  
+X-DNS-Prefetch-Control: off  
+Set-Cookie: prov=c6c8237c-3091-b4a6-5b81-f586d36db048; domain=.stackoverflow.com; expires=Fri, 01-Jan-2055 00:00:00 GMT; path=/; HttpOnly  
 0  
   
-16. используя pvmove, перемещаем содержимое PV с RAID0 на RAID1:  
->root@vagrant:~# pvmove /dev/md0  
-  /dev/md0: Moved: 28.00%  
-  /dev/md0: Moved: 100.00%  
+вывод сообщает нам, что страница, к которой клиент обращается, была окончательно перенесена на новый URI, указанный в поле location заголовка - https. а порт 80 по умолчанию - это порт протокола http.
   
-17. делаем --fail на устройство в нашем RAID1 md:  
->root@vagrant:~# mdadm /dev/md1 --fail /dev/sdb1  
-mdadm: set /dev/sdb1 faulty in /dev/md1  
   
->root@vagrant:~# mdadm -D /dev/md1  
-/dev/md1:  
-           Version : 1.2  
-     Creation Time : Thu Nov 25 18:53:57 2021  
-        Raid Level : raid1  
-        Array Size : 2094080 (2045.00 MiB 2144.34 MB)  
-     Used Dev Size : 2094080 (2045.00 MiB 2144.34 MB)  
-      Raid Devices : 2  
-     Total Devices : 2  
-       Persistence : Superblock is persistent  
-... 
-       Update Time : Thu Nov 25 19:34:13 2021  
-             State : clean, degraded  
-    Active Devices : 1  
-   Working Devices : 1  
-    Failed Devices : 1  
-     Spare Devices : 0  
-... 
-Consistency Policy : resync  
-...
-              Name : vagrant:1  (local to host vagrant)  
-              UUID : 5f778c03:03c9fa1f:76ba81a9:930cfa2a  
-            Events : 19  
-...
-    Number   Major   Minor   RaidDevice State  
-       -       0        0        0      removed  
-       1       8       33        1      active sync   /dev/sdc1  
-       0       8       17        -      faulty   /dev/sdb1  
-
-18. убеждаемся через вывод dmesg, что RAID1 работает в деградированном состоянии:
->root@vagrant:~# dmesg | grep md1  
-[ 1384.970804] md/raid1:md1: not clean -- starting background reconstruction  
-[ 1384.970806] md/raid1:md1: active with 2 out of 2 mirrors  
-[ 1384.970831] md1: detected capacity change from 0 to 2144337920  
-[ 1384.975472] md: resync of RAID array md1  
-[ 1395.447905] md: md1: resync done.  
-[ 3800.592011] md/raid1:md1: Disk failure on sdb1, disabling device.  
-               md/raid1:md1: Operation continuing on 1 devices.  
+2. полученный HTTP код от первого ответа сервера (именно он и выполнялся дольше всего - 399 мс):  
+>**General:**  
+	Request URL: https://stackoverflow.com/  
+	Request Method: GET  
+	Status Code: 200   
+	Remote Address: 151.101.129.69:443  
+	Referrer Policy: strict-origin-when-cross-origin  
+**Response Headers**  
+	accept-ranges: bytes  
+	cache-control: private  
+	content-security-policy: upgrade-insecure-requests; frame-ancestors 'self' https://stackexchange.com  
+	content-type: text/html; charset=utf-8  
+	date: Sat, 27 Nov 2021 14:41:42 GMT  
+	feature-policy: microphone 'none'; speaker 'none'  
+	strict-transport-security: max-age=15552000  
+	vary: Accept-Encoding,Fastly-SSL  
+	via: 1.1 varnish  
+	x-cache: MISS  
+	x-cache-hits: 0  
+	x-dns-prefetch-control: off  
+	x-frame-options: SAMEORIGIN  
+	x-request-guid: 100a4f6f-a593-4ffd-80e1-aa17c385855d  
+	x-served-by: cache-ams21036-AMS  
+	x-timer: S1638024103.612700,VS0,VE80  
+**Request Headers**  
+	:authority: stackoverflow.com  
+	:method: GET  
+	:path: /  
+	:scheme: https
+	accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9  
+	accept-encoding: gzip, deflate, br  
+	accept-language: en-US,en;q=0.9,ru-RU;q=0.8,ru;q=0.7,de;q=0.6  
+	cache-control: no-cache  
+	cookie: prov=4e3477cb-d5a2-f96a-5fe4-b1e01ba497f0; _ga=GA1.2.1224917880.1637702231; OptanonAlertBoxClosed=2021-11-23T21:17:13.297Z; OptanonConsent=isIABGlobal=false&datestamp=Wed+Nov+24+2021+00%3A17%3A13+GMT%2B0300+(%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0%2C+%D1%81%D1%82%D0%B0%D0%BD%D0%B4%D0%B0%D1%80%D1%82%D0%BD%D0%BE%D0%B5+%D0%B2%D1%80%D0%B5%D0%BC%D1%8F)&version=6.10.0&hosts=&landingPath=NotLandingPage&groups=C0003%3A1%2CC0004%3A1%2CC0002%3A1%2CC0001%3A1; _ym_d=1637836925; _ym_uid=1637836925367902936; _gid=GA1.2.723807105.1638015627; _ym_isad=1; mfnes=3aecCAYQAxoLCOLhlt3X7Zg6EAUgASgBMgg0NTgxYzc5YQ==  
+	pragma: no-cache  
+	sec-ch-ua: " Not A;Brand";v="99", "Chromium";v="96", "Google Chrome";v="96"  
+	sec-ch-ua-mobile: ?1  
+	sec-ch-ua-platform: "Android"  
+	sec-fetch-dest: document  
+	sec-fetch-mode: navigate  
+	sec-fetch-site: none  
+	sec-fetch-user: ?1  
+	upgrade-insecure-requests: 1  
+	user-agent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Mobile Safari/537.36  
   
-19. тестируем целостность файла, несмотря на "сбойный" диск он должен быть доступен:  
->root@vagrant: # gzip -t /tmp/new/test.gz  
-root@vagrant: # echo $?  
-0  
+![скриншот задания 2](https://ibb.co/wRvDR8R)  
   
-20. гасим тестовый хост:  
->PS C:\Users\skuznetsova> vagrant destroy  
-    default: Are you sure you want to destroy the 'default' VM? [y/N] y  
-==> default: Forcing shutdown of VM...  
-==> default: Destroying VM and associated drives...  
+  
+3. мой IP через whoer.net/:  
+>37.1.85.133  
+  
+  
+4. мой провайдер:  
+>Yarnet Ltd  
+  
+37.1.85.133.yarnet.ru принадлежит AS Yarnet Ltd (AS197078).  
+  
+  
+5. у меня Win10, по команде tracert не выводится инфа по АС:  
+>	PS C:\Windows\System32> tracert -An 8.8.8.8  
+	
+	Tracing route to dns.google [8.8.8.8]  
+	over a maximum of 30 hops:  
+	
+	  1   170 ms   158 ms    32 ms  192.168.0.1  
+	  2     5 ms    12 ms     2 ms  asr-1002-b4.yarnet.ru [212.232.63.66]  
+	  3     *        *        *     Request timed out.  
+	  4     *        *        *     Request timed out.  
+	  5     *        *        *     Request timed out.  
+	  6     *        *        *     Request timed out.  
+	  7     *        *        *     Request timed out.  
+	  8     *        *        *     Request timed out.  
+	  9     *        *        *     Request timed out.  
+	 10     *        *        *     Request timed out.  
+	 11     *        *        *     Request timed out.  
+	 12     *        *        *     Request timed out.  
+	 13     *        *        *     Request timed out.  
+	 14     *        *        *     Request timed out.  
+	 15     *        *        *     Request timed out.  
+	 16     *        *        *     Request timed out.  
+	 17     *        *        *     Request timed out.  
+	 18     *        *        *     Request timed out.  
+	 19     *        *        *     Request timed out.  
+	 20     *        *        *     Request timed out.  
+	 21     *        *        *     Request timed out.  
+	 22    21 ms     *        *     dns.google [8.8.8.8]  
+	 23    23 ms    22 ms    23 ms  dns.google [8.8.8.8]  
+	
+	Trace complete.  
+  
+  
+6. установили себе утилиту MTR для винды, делаем запрос по 8.8.8.8:  
+>
+|------------------------------------------------------------------------------------------|  
+|                                      WinMTR statistics                                   |  
+|                       Host              -   %  | Sent | Recv | Best | Avrg | Wrst | Last |  
+|------------------------------------------------|------|------|------|------|------|------|  
+|                             192.168.0.1 -    0 |    9 |    9 |    2 |    7 |   13 |   11 |  
+|                   asr-1002-b2.yarnet.ru -    0 |    9 |    9 |    3 |    9 |   14 |   13 |  
+|                   No response from host -  100 |    1 |    0 |    0 |    0 |    0 |    0 |  
+|                   No response from host -  100 |    1 |    0 |    0 |    0 |    0 |    0 |  
+|                   No response from host -  100 |    1 |    0 |    0 |    0 |    0 |    0 |  
+|                   No response from host -  100 |    1 |    0 |    0 |    0 |    0 |    0 |  
+|                   No response from host -  100 |    1 |    0 |    0 |    0 |    0 |    0 |  
+|                   No response from host -  100 |    1 |    0 |    0 |    0 |    0 |    0 |  
+|                   No response from host -  100 |    1 |    0 |    0 |    0 |    0 |    0 |  
+|                   No response from host -  100 |    1 |    0 |    0 |    0 |    0 |    0 |  
+|                   No response from host -  100 |    1 |    0 |    0 |    0 |    0 |    0 |  
+|                   No response from host -  100 |    1 |    0 |    0 |    0 |    0 |    0 |  
+|                   No response from host -  100 |    1 |    0 |    0 |    0 |    0 |    0 |  
+|                   No response from host -  100 |    1 |    0 |    0 |    0 |    0 |    0 |  
+|                   No response from host -  100 |    1 |    0 |    0 |    0 |    0 |    0 |  
+|                   No response from host -  100 |    1 |    0 |    0 |    0 |    0 |    0 |  
+|                   No response from host -  100 |    1 |    0 |    0 |    0 |    0 |    0 |  
+|                   No response from host -  100 |    1 |    0 |    0 |    0 |    0 |    0 |  
+|                              dns.google -   20 |    5 |    4 |    0 |   25 |   27 |   24 |  
+|________________________________________________|______|______|______|______|______|______|  
+   WinMTR v0.92 GPL V2 by Appnor MSP - Fully Managed Hosting & Cloud Provider  
+  
+наибольшая задержка на хосте asr-1002-b2.yarnet.ru.  
+  
+  
+7. вывод dig dns.google:  
+>	C:\WINDOWS\system32>dig dns.google  
+	  
+	; <<>> DiG 9.16.23 <<>> dns.google  
+	;; global options: +cmd  
+	;; Got answer:  
+	;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 38942  
+	;; flags: qr rd ra ad; QUERY: 1, ANSWER: 2, AUTHORITY: 0, ADDITIONAL: 1  
+	  
+	;; OPT PSEUDOSECTION:  
+	; EDNS: version: 0, flags:; udp: 4096  
+	;; QUESTION SECTION:  
+	;dns.google.                    IN      A  
+	  
+	;; ANSWER SECTION:  
+	**dns.google.             405     IN      A       8.8.8.8** 
+	**dns.google.             405     IN      A       8.8.4.4** 
+	  
+	;; Query time: 0 msec  
+	;; SERVER: 212.232.62.10#53(212.232.62.10)  
+	;; WHEN: Sat Nov 27 19:10:31 Russia TZ 2 Standard Time 2021  
+	;; MSG SIZE  rcvd: 71  
+  
+  
+8. проверяем PTR записи для IP адресов:  
+>C:\WINDOWS\system32>dig -x **8.8.8.8**  
+  
+; <<>> DiG 9.16.23 <<>> -x 8.8.8.8  
+;; global options: +cmd  
+;; Got answer:  
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 23148  
+;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 2, ADDITIONAL: 1  
+  
+;; OPT PSEUDOSECTION:  
+; EDNS: version: 0, flags:; udp: 4096  
+;; QUESTION SECTION:  
+;8.8.8.8.in-addr.arpa.          IN      PTR  
+  
+;; ANSWER SECTION:  
+8.8.8.8.in-addr.arpa.   7918    IN      PTR     **dns.google**.  
+  
+;; AUTHORITY SECTION:  
+8.8.in-addr.arpa.       6881    IN      NS      ns2.level3.net.  
+8.8.in-addr.arpa.       6881    IN      NS      ns1.level3.net.  
+  
+;; Query time: 8 msec  
+;; SERVER: 212.232.62.10#53(212.232.62.10)  
+;; WHEN: Sat Nov 27 19:16:02 Russia TZ 2 Standard Time 2021  
+;; MSG SIZE  rcvd: 119  
+  
+>C:\WINDOWS\system32>dig -x **8.8.4.4**   
+  
+; <<>> DiG 9.16.23 <<>> -x 8.8.4.4  
+;; global options: +cmd  
+;; Got answer:  
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 6862  
+;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 2, ADDITIONAL: 1  
+  
+;; OPT PSEUDOSECTION:  
+; EDNS: version: 0, flags:; udp: 4096  
+;; QUESTION SECTION:  
+;4.4.8.8.in-addr.arpa.          IN      PTR  
+  
+;; ANSWER SECTION:  
+4.4.8.8.in-addr.arpa.   6834    IN      PTR     **dns.google**.  
+  
+;; AUTHORITY SECTION:  
+8.8.in-addr.arpa.       6834    IN      NS      ns1.level3.net.  
+8.8.in-addr.arpa.       6834    IN      NS      ns2.level3.net.  
+  
+;; Query time: 6 msec  
+;; SERVER: 212.232.62.10#53(212.232.62.10)  
+;; WHEN: Sat Nov 27 19:16:49 Russia TZ 2 Standard Time 2021  
+;; MSG SIZE  rcvd: 119  
+  
