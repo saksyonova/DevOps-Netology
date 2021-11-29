@@ -70,7 +70,7 @@ Set-Cookie: prov=c6c8237c-3091-b4a6-5b81-f586d36db048; domain=.stackoverflow.com
 	upgrade-insecure-requests: 1  
 	user-agent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Mobile Safari/537.36  
   
-![скриншот задания 2](https://ibb.co/wRvDR8R)  
+![скриншот задания 2](https://i.ibb.co/FKPGKcK/Screenshot-1.png)  
   
   
 3. мой IP через whoer.net/:  
@@ -174,51 +174,51 @@ Set-Cookie: prov=c6c8237c-3091-b4a6-5b81-f586d36db048; domain=.stackoverflow.com
 8. проверяем PTR записи для IP адресов:  
 >C:\WINDOWS\system32>dig -x **8.8.8.8**  
   
-; <<>> DiG 9.16.23 <<>> -x 8.8.8.8  
-;; global options: +cmd  
-;; Got answer:  
-;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 23148  
-;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 2, ADDITIONAL: 1  
-  
-;; OPT PSEUDOSECTION:  
-; EDNS: version: 0, flags:; udp: 4096  
-;; QUESTION SECTION:  
-;8.8.8.8.in-addr.arpa.          IN      PTR  
-  
-;; ANSWER SECTION:  
-8.8.8.8.in-addr.arpa.   7918    IN      PTR     **dns.google**.  
-  
-;; AUTHORITY SECTION:  
-8.8.in-addr.arpa.       6881    IN      NS      ns2.level3.net.  
-8.8.in-addr.arpa.       6881    IN      NS      ns1.level3.net.  
-  
-;; Query time: 8 msec  
-;; SERVER: 212.232.62.10#53(212.232.62.10)  
-;; WHEN: Sat Nov 27 19:16:02 Russia TZ 2 Standard Time 2021  
-;; MSG SIZE  rcvd: 119  
-  
+	; <<>> DiG 9.16.23 <<>> -x 8.8.8.8  
+	;; global options: +cmd  
+	;; Got answer:  
+	;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 23148  
+	;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 2, ADDITIONAL: 1  
+	
+	;; OPT PSEUDOSECTION:  
+	; EDNS: version: 0, flags:; udp: 4096  
+	;; QUESTION SECTION:  
+	;8.8.8.8.in-addr.arpa.          IN      PTR  
+	
+	;; ANSWER SECTION:  
+	8.8.8.8.in-addr.arpa.   7918    IN      PTR     **dns.google**.  
+	
+	;; AUTHORITY SECTION:  
+	8.8.in-addr.arpa.       6881    IN      NS      ns2.level3.net.  
+	8.8.in-addr.arpa.       6881    IN      NS      ns1.level3.net.  
+	
+	;; Query time: 8 msec  
+	;; SERVER: 212.232.62.10#53(212.232.62.10)  
+	;; WHEN: Sat Nov 27 19:16:02 Russia TZ 2 Standard Time 2021  
+	;; MSG SIZE  rcvd: 119  
+	
 >C:\WINDOWS\system32>dig -x **8.8.4.4**   
-  
-; <<>> DiG 9.16.23 <<>> -x 8.8.4.4  
-;; global options: +cmd  
-;; Got answer:  
-;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 6862  
-;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 2, ADDITIONAL: 1  
-  
-;; OPT PSEUDOSECTION:  
-; EDNS: version: 0, flags:; udp: 4096  
-;; QUESTION SECTION:  
-;4.4.8.8.in-addr.arpa.          IN      PTR  
-  
-;; ANSWER SECTION:  
-4.4.8.8.in-addr.arpa.   6834    IN      PTR     **dns.google**.  
-  
-;; AUTHORITY SECTION:  
-8.8.in-addr.arpa.       6834    IN      NS      ns1.level3.net.  
-8.8.in-addr.arpa.       6834    IN      NS      ns2.level3.net.  
-  
-;; Query time: 6 msec  
-;; SERVER: 212.232.62.10#53(212.232.62.10)  
-;; WHEN: Sat Nov 27 19:16:49 Russia TZ 2 Standard Time 2021  
-;; MSG SIZE  rcvd: 119  
-  
+	
+	; <<>> DiG 9.16.23 <<>> -x 8.8.4.4  
+	;; global options: +cmd  
+	;; Got answer:  
+	;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 6862  
+	;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 2, ADDITIONAL: 1  
+	
+	;; OPT PSEUDOSECTION:  
+	; EDNS: version: 0, flags:; udp: 4096  
+	;; QUESTION SECTION:  
+	;4.4.8.8.in-addr.arpa.          IN      PTR  
+	
+	;; ANSWER SECTION:  
+	4.4.8.8.in-addr.arpa.   6834    IN      PTR     **dns.google**.  
+	
+	;; AUTHORITY SECTION:  
+	8.8.in-addr.arpa.       6834    IN      NS      ns1.level3.net.  
+	8.8.in-addr.arpa.       6834    IN      NS      ns2.level3.net.  
+	
+	;; Query time: 6 msec  
+	;; SERVER: 212.232.62.10#53(212.232.62.10)  
+	;; WHEN: Sat Nov 27 19:16:49 Russia TZ 2 Standard Time 2021  
+	;; MSG SIZE  rcvd: 119  
+	
