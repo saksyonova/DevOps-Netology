@@ -221,4 +221,5 @@ Set-Cookie: prov=c6c8237c-3091-b4a6-5b81-f586d36db048; domain=.stackoverflow.com
 	;; SERVER: 212.232.62.10#53(212.232.62.10)  
 	;; WHEN: Sat Nov 27 19:16:49 Russia TZ 2 Standard Time 2021  
 	;; MSG SIZE  rcvd: 119  
-	
+  
+к данным IP привязано доменное имя dns.google.  
