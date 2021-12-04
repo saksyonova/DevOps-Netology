@@ -8,7 +8,7 @@ Known via "bgp 6447", distance 20, metric 0
 Tag 3356, type external  
 Last update from 4.68.4.46 1w3d ago  
 Routing Descriptor Blocks:  
-* 4.68.4.46, from 4.68.4.46, 1w3d ago  
+\* 4.68.4.46, from 4.68.4.46, 1w3d ago  
 	Route metric is 0, traffic share count is 1  
 	AS Hops 3  
 	Route tag 3356  
