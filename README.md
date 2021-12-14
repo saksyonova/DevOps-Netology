@@ -66,67 +66,67 @@ date >>hosts.log
 done
 ```
 
->sania@Sania-VB:~$ cat hosts.log
-Вт 14 дек 2021 22:01:16 MSK
-    check 192.168.0.1 status=127
-    check 173.194.222.113 status=127
-    check 87.250.250.24 status=127
-Вт 14 дек 2021 22:01:16 MSK
-    check 192.168.0.1 status=127
-    check 173.194.222.113 status=127
-    check 87.250.250.24 status=127
-Вт 14 дек 2021 22:01:16 MSK
-    check 192.168.0.1 status=127
-    check 173.194.222.113 status=127
-    check 87.250.250.24 status=127
-Вт 14 дек 2021 22:01:16 MSK
-    check 192.168.0.1 status=127
-    check 173.194.222.113 status=127
-    check 87.250.250.24 status=127
-Вт 14 дек 2021 22:01:16 MSK
-    check 192.168.0.1 status=127
-    check 173.194.222.113 status=127
-    check 87.250.250.24 status=127
-Вт 14 дек 2021 22:06:06 MSK
-    check 192.168.0.1 status=127
-    check 173.194.222.113 status=127
-    check 87.250.250.24 status=127
-Вт 14 дек 2021 22:06:06 MSK
-    check 192.168.0.1 status=127
-    check 173.194.222.113 status=127
-    check 87.250.250.24 status=127
-Вт 14 дек 2021 22:06:06 MSK
-    check 192.168.0.1 status=127
-    check 173.194.222.113 status=127
-    check 87.250.250.24 status=127
-Вт 14 дек 2021 22:06:06 MSK
-    check 192.168.0.1 status=127
-    check 173.194.222.113 status=127
-    check 87.250.250.24 status=127
-Вт 14 дек 2021 22:06:06 MSK
-    check 192.168.0.1 status=127
-    check 173.194.222.113 status=127
-    check 87.250.250.24 status=127
-Вт 14 дек 2021 22:08:44 MSK
-    check 192.168.0.1 status=3
-    check 173.194.222.113 status=3
-    check 87.250.250.24 status=3
-Вт 14 дек 2021 22:08:44 MSK
-    check 192.168.0.1 status=3
-    check 173.194.222.113 status=3
-    check 87.250.250.24 status=3
-Вт 14 дек 2021 22:08:44 MSK
-    check 192.168.0.1 status=3
-    check 173.194.222.113 status=3
-    check 87.250.250.24 status=3
-Вт 14 дек 2021 22:08:44 MSK
-    check 192.168.0.1 status=3
-    check 173.194.222.113 status=3
-    check 87.250.250.24 status=3
-Вт 14 дек 2021 22:08:44 MSK
-    check 192.168.0.1 status=3
-    check 173.194.222.113 status=3
-    check 87.250.250.24 status=3
+>sania@Sania-VB:~$ cat hosts.log  
+Вт 14 дек 2021 22:01:16 MSK  
+    check 192.168.0.1 status=127  
+    check 173.194.222.113 status=127  
+    check 87.250.250.24 status=127  
+Вт 14 дек 2021 22:01:16 MSK  
+    check 192.168.0.1 status=127  
+    check 173.194.222.113 status=127  
+    check 87.250.250.24 status=127  
+Вт 14 дек 2021 22:01:16 MSK  
+    check 192.168.0.1 status=127  
+    check 173.194.222.113 status=127  
+    check 87.250.250.24 status=127  
+Вт 14 дек 2021 22:01:16 MSK  
+    check 192.168.0.1 status=127  
+    check 173.194.222.113 status=127  
+    check 87.250.250.24 status=127  
+Вт 14 дек 2021 22:01:16 MSK  
+    check 192.168.0.1 status=127  
+    check 173.194.222.113 status=127  
+    check 87.250.250.24 status=127  
+Вт 14 дек 2021 22:06:06 MSK  
+    check 192.168.0.1 status=127  
+    check 173.194.222.113 status=127  
+    check 87.250.250.24 status=127  
+Вт 14 дек 2021 22:06:06 MSK  
+    check 192.168.0.1 status=127  
+    check 173.194.222.113 status=127  
+    check 87.250.250.24 status=127  
+Вт 14 дек 2021 22:06:06 MSK  
+    check 192.168.0.1 status=127  
+    check 173.194.222.113 status=127  
+    check 87.250.250.24 status=127  
+Вт 14 дек 2021 22:06:06 MSK  
+    check 192.168.0.1 status=127  
+    check 173.194.222.113 status=127  
+    check 87.250.250.24 status=127  
+Вт 14 дек 2021 22:06:06 MSK  
+    check 192.168.0.1 status=127  
+    check 173.194.222.113 status=127  
+    check 87.250.250.24 status=127  
+Вт 14 дек 2021 22:08:44 MSK  
+    check 192.168.0.1 status=3  
+    check 173.194.222.113 status=3  
+    check 87.250.250.24 status=3  
+Вт 14 дек 2021 22:08:44 MSK  
+    check 192.168.0.1 status=3  
+    check 173.194.222.113 status=3  
+    check 87.250.250.24 status=3  
+Вт 14 дек 2021 22:08:44 MSK  
+    check 192.168.0.1 status=3  
+    check 173.194.222.113 status=3  
+    check 87.250.250.24 status=3  
+Вт 14 дек 2021 22:08:44 MSK  
+    check 192.168.0.1 status=3  
+    check 173.194.222.113 status=3  
+    check 87.250.250.24 status=3  
+Вт 14 дек 2021 22:08:44 MSK  
+    check 192.168.0.1 status=3  
+    check 173.194.222.113 status=3  
+    check 87.250.250.24 status=3  
 
 ## Обязательная задача 3
 Необходимо дописать скрипт из предыдущего задания так, чтобы он выполнялся до тех пор, пока один из узлов не окажется недоступным. Если любой из узлов недоступен - IP этого узла пишется в файл error, скрипт прерывается.
