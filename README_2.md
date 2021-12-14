@@ -51,8 +51,8 @@ for result in result_os.split('\n'):
 
 ### Вывод скрипта при запуске при тестировании:
 ```
-PS C:\Users\skuznetsova\PyProjects> & C:/Users/skuznetsova/AppData/Local/Programs/Python/Python310/python.exe c:/Users/skuznetsova/PyProjects/script_1.py
-**README_2.md**
+PS C:\Users\skuznetsova\PyProjects> & C:/Users/skuznetsova/AppData/Local/Programs/Python/Python310/python.exe c:/Users/skuznetsova/PyProjects/script_1.py  
+**README_2.md**  
 ```
 
 ## Обязательная задача 3
@@ -79,8 +79,8 @@ for result in result_os.split('\n'):
 
 ### Вывод скрипта при запуске при тестировании:
 ```
-PS C:\Users\skuznetsova\Git\Projects\DevOps-Netology> & C:/Users/skuznetsova/AppData/Local/Programs/Python/Python310/python.exe c:/Users/skuznetsova/PyProjects/script_2.py
-**C:\Users\skuznetsova\Git\Projects\DevOps-Netology\README_2.md**
+PS C:\Users\skuznetsova\Git\Projects\DevOps-Netology> & C:/Users/skuznetsova/AppData/Local/Programs/Python/Python310/python.exe c:/Users/skuznetsova/PyProjects/script_2.py  
+**C:\Users\skuznetsova\Git\Projects\DevOps-Netology\README_2.md**  
 ```
 
 ## Обязательная задача 4
@@ -118,11 +118,11 @@ while 1==1 : #отладочное число проверок
 
 ### Вывод скрипта при запуске при тестировании:
 ```
-PS C:\Users\skuznetsova\PyProjects> & C:/Users/skuznetsova/AppData/Local/Programs/Python/Python310/python.exe c:/Users/skuznetsova/PyProjects/script_3.py
-__________
-{'drive.google.com': '0.0.0.0', 'mail.google.com': '0.0.0.0', 'google.com': '0.0.0.0'}
-__________
-2021-12-15 01:07:19 [ERROR] drive.google.com IP mismatch: 0.0.0.0 74.125.131.194
-2021-12-15 01:07:19 [ERROR] mail.google.com IP mismatch: 0.0.0.0 108.177.14.18
-2021-12-15 01:07:19 [ERROR] google.com IP mismatch: 0.0.0.0 64.233.162.113
+PS C:\Users\skuznetsova\PyProjects> & C:/Users/skuznetsova/AppData/Local/Programs/Python/Python310/python.exe c:/Users/skuznetsova/PyProjects/script_3.py  
+__________  
+{'drive.google.com': '0.0.0.0', 'mail.google.com': '0.0.0.0', 'google.com': '0.0.0.0'}  
+__________  
+2021-12-15 01:07:19 [ERROR] drive.google.com IP mismatch: 0.0.0.0 74.125.131.194  
+2021-12-15 01:07:19 [ERROR] mail.google.com IP mismatch: 0.0.0.0 108.177.14.18  
+2021-12-15 01:07:19 [ERROR] google.com IP mismatch: 0.0.0.0 64.233.162.113  
 ```
