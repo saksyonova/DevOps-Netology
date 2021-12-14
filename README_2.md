@@ -52,7 +52,7 @@ for result in result_os.split('\n'):
 ### Вывод скрипта при запуске при тестировании:
 ```
 PS C:\Users\skuznetsova\PyProjects> & C:/Users/skuznetsova/AppData/Local/Programs/Python/Python310/python.exe c:/Users/skuznetsova/PyProjects/script_1.py  
-**README_2.md**  
+README_2.md  
 ```
 
 ## Обязательная задача 3
@@ -80,7 +80,7 @@ for result in result_os.split('\n'):
 ### Вывод скрипта при запуске при тестировании:
 ```
 PS C:\Users\skuznetsova\Git\Projects\DevOps-Netology> & C:/Users/skuznetsova/AppData/Local/Programs/Python/Python310/python.exe c:/Users/skuznetsova/PyProjects/script_2.py  
-**C:\Users\skuznetsova\Git\Projects\DevOps-Netology\README_2.md**  
+C:\Users\skuznetsova\Git\Projects\DevOps-Netology\README_2.md  
 ```
 
 ## Обязательная задача 4
