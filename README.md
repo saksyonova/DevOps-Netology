@@ -68,7 +68,7 @@ done
 
 sania@Sania-VB:~$ cat hosts.log  
 Вт 14 дек 2021 22:01:16 MSK  
-&ensp;check 192.168.0.1 status=127  
+&ensp;&ensp;&ensp;&ensp;check 192.168.0.1 status=127  
     check 173.194.222.113 status=127  
     check 87.250.250.24 status=127  
 Вт 14 дек 2021 22:01:16 MSK  
