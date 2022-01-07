@@ -173,7 +173,7 @@ Success! Data written to: pki_int/intermediate/set-signed
 ```
 
 сам получившийся сертификат (дата в формате США: ММ/ДД/ГГГГ):
-![рутовый сертификат](https://ibb.co/26DnNfR)
+![рутовый сертификат](https://i.ibb.co/0XgDtd1/1.png)
 
 копируем его в /usr/local/share/ca-certificates:
 ```
@@ -270,7 +270,7 @@ sanny@Sania-VB:~$ sudo vim nginx.conf
 https://test.example.com/
 
 браузер не выдаёт никаких сообщений о "неподходящем" сертификате, всё ок:
-![скрин браузера без предупреждений](https://ibb.co/GdBkvcM)
+![скрин браузера без предупреждений](https://i.ibb.co/XWNpZS5/3.png)
 
 
 ## создаём скрипт для генерации нового сертификата в хранилище и помещаем его в crontab для автоматического запуска этой задачи
@@ -330,7 +330,7 @@ Jan  7 20:28:01 Sania-VB CRON[6376]: (CRON) info (No MTA installed, discarding o
 Jan  7 20:29:01 Sania-VB CRON[6391]: (root) CMD (/usr/local/bin/script.sh)
 Jan  7 20:29:01 Sania-VB CRON[6390]: (CRON) info (No MTA installed, discarding output)
 ```
-P.S. сообщение Not MTA installed оказалось не ошибочным, просто не установлен почтовый агент (ни на что не влияет).
+P. S. сообщение Not MTA installed оказалось не ошибочным, просто не установлен почтовый агент (ни на что не влияет).
 
 
 
