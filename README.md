@@ -14,3 +14,4 @@
 
 ## задача 3
 ![скрин развёрнутого мониторинга Grafana](https://i.ibb.co/c1WyZ2K/grafana.png)
+
