@@ -18,8 +18,9 @@ sania@sania-vb:~$ docker run --rm --name pg-docker -e POSTGRES_PASSWORD=postgres
 ```
 sania@sania-vb:~$ psql -h 127.0.0.1 -U postgres -d postgres
 postgres=# \l
-![задание 1](https://i.ibb.co/1ftpDRK/Screenshot-1.png)
 ```
+![задание 1](https://i.ibb.co/1ftpDRK/Screenshot-1.png)
+
   
   
 ## задание 2
@@ -92,26 +93,30 @@ test_db=# GRANT DELETE ON TABLE public.orders TO "test-simple-user";
 список БД:  
 ```
 test_db=# \l
-![БД](https://i.ibb.co/dtF0xXb/test-db.png)
 ```
+![БД](https://i.ibb.co/dtF0xXb/test-db.png)
+
   
 список табличек:  
 ```
 test_db=# \dt
-![таблички](https://i.ibb.co/9YdWZg8/tables.png)
 ```
+![таблички](https://i.ibb.co/9YdWZg8/tables.png)
+
   
 список ролей:  
 ```
 test_db=# \du
-![роли](https://i.ibb.co/drYPNr2/image.png)
 ```
+![роли](https://i.ibb.co/drYPNr2/image.png)
+
   
 список пользователей с правами в созданных табличках:  
 ```
 test_db=# SELECT * FROM information_schema.table_privileges where grantee in ('test-admin-user', 'test-simple-user');
-![привилегии](https://i.ibb.co/GM0TMMV/privileges.png)
 ```
+![привилегии](https://i.ibb.co/GM0TMMV/privileges.png)
+
   
   
 ## задание 3
@@ -155,8 +160,9 @@ test_db=# UPDATE clients SET booking = 5 where id = 3;
 выводим только тех клиентов, которые сделали заказ:
 ```
 test_db=# SELECT * FROM clients where booking IS NOT null;
-![заказы](https://i.ibb.co/n7JTbzG/orders.png)
 ```
+![заказы](https://i.ibb.co/n7JTbzG/orders.png)
+
  
   
 ## задание 5
@@ -164,8 +170,9 @@ test_db=# SELECT * FROM clients where booking IS NOT null;
 пробуем получить полную инфу по выполнению запроса выдачи всех пользователей, используя запрос EXPLAIN, который покажет инфу о нагрузке при исполнении запроса и отфильтрует инфу по заполненным полям booking:
 ```
 test_db=# EXPLAIN SELECT * FROM clients where booking IS NOT null;
-![инфа](https://i.ibb.co/YBH25bL/explain.png)
 ```
+![инфа](https://i.ibb.co/YBH25bL/explain.png)
+
   
   
 ## задание 5
@@ -174,8 +181,9 @@ test_db=# EXPLAIN SELECT * FROM clients where booking IS NOT null;
 сначала проверяем имя текущего контейнера:
 ```
 sania@sania-vb:~$ docker ps
-![контейнер](https://i.ibb.co/hXvfLMf/pg-docker.png)
 ```
+![контейнер](https://i.ibb.co/hXvfLMf/pg-docker.png)
+
   
 делаем бэкап:
 ```
@@ -191,8 +199,9 @@ sania@sania-vb:~$ docker stop pg-docker
 поднимаем новый контейнер:
 ```
 sania@sania-vb:~$ docker run --rm --name pg-docker-2 -e POSTGRES_PASSWORD=postgres -ti -p 5432:5432 -v vol1:/var/lib/postgresql/data -v vol2:/var/lib/postgresql postgres:12
-![новый контейнер](https://i.ibb.co/WBmSSn2/pg-docker-2.png)
 ```
+![новый контейнер](https://i.ibb.co/WBmSSn2/pg-docker-2.png)
+
 
 поднимаем в нём бэкап:
 ```
