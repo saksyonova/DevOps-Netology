@@ -7,9 +7,9 @@
 ```
 sania@sania-vb:~$ docker pull postgres:12
 sania@sania-vb:~$ docker volume create vol1
-vol1
+	vol1
 sania@sania-vb:~$ docker volume create vol2
-vol2
+	vol2
 
 sania@sania-vb:~$ docker run --rm --name pg-docker -e POSTGRES_PASSWORD=postgres -ti -p 5432:5432 -v vol1:/var/lib/postgresql/data -v vol2:/var/lib/postgresql postgres:12
 ```
