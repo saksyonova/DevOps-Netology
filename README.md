@@ -218,7 +218,7 @@ mysql> SHOW PROFILES;
 |  1       | 0.00158375 | SELECT TABLE_NAME, ENGINE FROM information_schema.TABLES WHERE table_name = 'orders' and TABLE_SCHEMA = 'test_db'  |
 |  2       | 0.10500350 | ALTER TABLE orders ENGINE = MyISAM                                                                                 |
 |  3       | 0.11157125 | ALTER TABLE orders ENGINE = INNODB                                                                                 |
-+--------------+-----------------+-----------------------------------------------------------------------------------------------------------+
++----------+------------+--------------------------------------------------------------------------------------------------------------------+
 3 rows in set, 1 warning (0.00 sec)
 ```
 на MyISAM переключились за 0.105 секунд;
