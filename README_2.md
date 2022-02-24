@@ -53,7 +53,7 @@ root@0bc7fb4f0a92:/# psql -h localhost -p 5432 -U postgres -W
 вывод списка БД:
 ```
 postgres=# \l
-							List of databases
+				List of databases
    Name    |  Owner   | Encoding |  Collate   |   Ctype    |   Access privileges
 -----------+----------+----------+------------+------------+----------------------
  postgres  | postgres | UTF8     | en_US.utf8 | en_US.utf8 | 
@@ -138,7 +138,7 @@ postgres=# \c test_database
 проверим таблички восстановленной БД:
 ```
 test_database=# \dt
-			List of relations
+		List of relations
 	 Schema  |  Name  |  Type  |  Owner   
 	---------+--------+--------+----------
 	 public  | orders | table  | postgres
