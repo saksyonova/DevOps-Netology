@@ -65,7 +65,8 @@ postgres=# \l
 ```
   
 подключение к БД:
-```postgres=# \c [DB_NAME]
+```
+postgres=# \c [DB_NAME]
 ```
   
 вывод списка таблиц:
