@@ -126,15 +126,15 @@ sania@sania-vb:~$ curl -X GET "localhost:9200/_cluster/health?pretty"
   
 удаляем все индексы:  
 ```
-sania@sania-vb:~$ curl -X DELETE 'http://localhost:9200/ind-1?pretty'  
+sania@sania-vb:~$ curl -X DELETE 'localhost:9200/ind-1?pretty'  
 { 
   "acknowledged" : true 
 } 
-sania@sania-vb:~$ curl -X DELETE 'http://localhost:9200/ind-2?pretty'  
+sania@sania-vb:~$ curl -X DELETE 'localhost:9200/ind-2?pretty'  
 { 
   "acknowledged" : true 
 } 
-sania@sania-vb:~$ curl -X DELETE 'http://localhost:9200/ind-3?pretty'  
+sania@sania-vb:~$ curl -X DELETE 'localhost:9200/ind-3?pretty'  
 { 
   "acknowledged" : true 
 } 
