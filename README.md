@@ -1,259 +1,276 @@
-# ДЗ по теме "6.3 MySQL" :whale2:
+# ДЗ по теме "6.5. Elasticsearch" :whale2:
 
 
 ## задача 1
+  
+докерфайл-манифест для разворачивания Elasticsearch на основе образа Centos:7:
+```
+FROM centos:7
 
-используя докер, поднимаем инстанс MySQL версии 8, а данные БД попробуем сохранить в новый volume.  
-затягиваем нужную версию MySql:
-```
-sania@sania-vb:~$ docker pull mysql:8.0
-	8.0: Pulling from library/mysql
-	6552179c3509: Pull complete 
-	d69aa66e4482: Pull complete 
-	3b19465b002b: Pull complete 
-	7b0d0cfe99a1: Pull complete 
-	9ccd5a5c8987: Pull complete 
-	2dab00d7d232: Pull complete 
-	5d726bac08ea: Pull complete 
-	11bb049c7b94: Pull complete 
-	7fcdd679c458: Pull complete 
-	11585aaf4aad: Pull complete 
-	5b5dc265cb1d: Pull complete 
-	fd400d64ffec: Pull complete 
-	Digest: sha256:e3358f55ea2b0cd432685d7e3c79a33a85c7a359b35fa87fc4993514b9573446
-	Status: Downloaded newer image for mysql:8.0
-	docker.io/library/mysql:8.0
-```	
-	
-создаём volume:
-```
-sania@sania-vb:~$ docker volume create mysql_vol
-	mysql_vol
-```
+EXPOSE 9200 9300
+USER 0
+RUN export ES_HOME="/var/lib/elasticsearch" && \
+yum -y install wget && \
+wget artifacts.elastic.co..._64.tar.gz && \
+wget artifacts.elastic.co....gz.sha512 && \
+sha512sum -c elasticsearch-8.0.1-linux-x86_64.tar.gz.sha512 && \
+tar -xzf elasticsearch-8.0.1-linux-x86_64.tar.gz && \
+rm -f elasticsearch-8.0.1-linux-x86_64.tar.gz* && \
+mv elasticsearch-8.0.1 ${ES_HOME} && \
+useradd -m -u 1000 elasticsearch && \
+chown elasticsearch:elasticsearch -R ${ES_HOME} && \
+yum -y remove wget && \
+yum clean all
 
-запускаем контейнер с MySQL:
-```
-sania@sania-vb:~$ docker run --rm --name mysql-docker -e MYSQL_ROOT_PASSWORD=mysql -ti -p 3306:3306 -v mysql_vol:/etc/mysql mysql:8.0
-```	
+COPY --chown=elasticsearch:elasticsearch elasticsearch.yml /var/lib/elasticsearch/config/
+USER 1000
+ENV ES_HOME="/var/lib/elasticsearch" \
+ES_PATH_CONF="/var/lib/elasticsearch/config"
+WORKDIR ${ES_HOME}
 
-подключаемся к MySQL в самом контейнере:
+CMD [“sh”, “-c”, “${ES_HOME}/bin/elasticsearch”]
 ```
-sania@sania-vb:~$ docker exec -it mysql-docker mysql -uroot -p
-	Enter password: mysql
-	Welcome to the MySQL monitor.  Commands end with ; or \g.
-	Your MySQL connection id is 8
-	Server version: 8.0.28 MySQL Community Server - GPL
-	
-	Copyright (c) 2000, 2022, Oracle and/or its affiliates.
-	
-	Oracle is a registered trademark of Oracle Corporation and/or its
-	affiliates. Other names may be trademarks of their respective
-	owners.
-	
-	Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
-	mysql> 
+  
+создаём образ:
 ```
-
-создаём новую БД, в которую будем восстанавливаться из бэкапа:
+root@sania-vb:/var/lib/docker/dockerfiles# docker build . -t saksyonova/saksyonova_repo:2.0
+	...
+	Successfully build 0667beeb27a5
+	Successfully tagged saksyonova/saksyonova/saksyonova_repo:2.0
 ```
-mysql>  create database test_db;
-	Query OK, 1 row affected (0.02 sec)
-mysql> exit
-	Bye
+  
+пушим этот образ к себе в репозиторий dockerhub:
 ```
-
-восстанавливаем наш сохранённый дамп в БД внутри контейнера:
+root@sania-vb:/var/lib/docker/dockerfiles# docker push saksyonova/saksyonova_repo:2.0 
 ```
-sania@sania-vb:~$ cat /home/sania/DBBackups/test_dump.sql | docker exec -i cbd602a6dc13 /usr/bin/mysql -u root --password=mysql test_db
+  
+образ можно забрать тут:
 ```
-		
-заходим в нашу БД test_db:
+docker pull saksyonova/saksyonova_repo:2.0 
 ```
-mysql> use test_db
-	Reading table information for completion of table and column names
-	You can turn off this feature to get a quicker startup with -A
-	
-	Database changed
-```	
-	
-проверяем её статус:
+  
+запускаем:
 ```
-mysql> \s
-	--------------
-	mysql  Ver 8.0.28 for Linux on x86_64 (MySQL Community Server - GPL)
-	
-	Connection id:		24
-	Current database:	test_db
-	Current user:		root@localhost
-	SSL:			Not in use
-	Current pager:		stdout
-	Using outfile:		''
-	Using delimiter:	;
-	Server version:		8.0.28 MySQL Community Server - GPL
-	Protocol version:	10
-	Connection:		Localhost via UNIX socket
-	Server characterset:	utf8mb4
-	Db     characterset:	utf8mb4
-	Client characterset:	latin1
-	Conn.  characterset:	latin1
-	UNIX socket:		/var/run/mysqld/mysqld.sock
-	Binary data as:		Hexadecimal
-	Uptime:			16 min 54 sec
-	
-	Threads: 2  Questions: 222  Slow queries: 0  Opens: 265  Flush tables: 3  Open tables: 178  Queries per second avg: 0.218
-	--------------
-```	
-	
-и восстановилась ли табличка orders из дампа:
+sania@sania-vb:~$ docker run --rm -d --name elastic -p 9200:9200 -p 9300:9300 saksyonova/saksyonova_repo:2.0 
 ```
-mysql> show tables
-	+-------------------+
-	| Tables_in_test_db |
-	+-------------------+
-	| orders            |
-	+-------------------+
-	1 row in set (0.00 sec)
-```		
-	
-выясняем кол-во записей с price > 300:
+  
+проверяем ответ elasticsearch:
 ```
-mysql> select count(*) from orders where price > 300;
-	+----------+
-	| count(*) |
-	+----------+
-	|        1 |
-	+----------+
-	1 row in set (0.00 sec)
-```	
-
-
+sania@sania-vb:~$ curl -X GET 'localhost:9200/' 
+{ 
+  "name" : "netology_test", 
+  "cluster_name" : "elasticsearch", 
+  "cluster_uuid" : "erh1f3xnThKbfPaCcbH5Jw", 
+  "version" : { 
+    "number" : "8.0.1", 
+    "build_flavor" : "default", 
+    "build_type" : "tar", 
+    "build_hash" : "801d9ccc7c2ee0f2cb121bbe22ab5af77a902372", 
+    "build_date" : "2022-02-24T13:55:40.601285296Z", 
+    "build_snapshot" : false, 
+    "lucene_version" : "9.0.0", 
+    "minimum_wire_compatibility_version" : "7.17.0", 
+    "minimum_index_compatibility_version" : "7.0.0" 
+  }, 
+  "tagline" : "You Know, for Search" 
+}
+```
+  
+  
 ## задача 2
-
-пробуем создать пользователя test в нашей БД с паролем test-pass, используя параметры:
-1. плагин авторизации mysql_native_password
-2. срок истечения пароля - 180 дней
-3. количество попыток авторизации - 3
-4. максимальное количество запросов в час - 100
-5. атрибуты пользователя:
-	- Фамилия "Pretty"
-	- Имя "James"
-
+  
+добавляем в Elasticsearch 3 индекса:
 ```
-mysql> CREATE USER 'test'@'localhost' IDENTIFIED BY 'test-pass';
-	Query OK, 0 rows affected (0.03 sec)
+sania@sania-vb:~$ curl -X PUT localhost:9200/ind-1 -H 'Content-Type: application/json' -d'{ "settings": { "number_of_shards": 1,  "number_of_replicas": 0 }}' 
+	{"acknowledged":true,"shards_acknowledged":true,"index":"ind-1"} 
+ 
+sania@sania-vb:~$ curl -X PUT localhost:9200/ind-2 -H 'Content-Type: application/json' -d'{ "settings": { "number_of_shards": 2,  "number_of_replicas": 1 }}' 
+	{"acknowledged":true,"shards_acknowledged":true,"index":"ind-2"} 
+ 
+sania@sania-vb:~$ curl -X PUT localhost:9200/ind-3 -H 'Content-Type: application/json' -d'{ "settings": { "number_of_shards": 4,  "number_of_replicas": 2 }}' 
+	{"acknowledged":true,"shards_acknowledged":true,"index":"ind-3"} 
+```
+  
+выводим список получившихся индексов:
+```
+sania@sania-vb:~$ curl -X GET 'localhost:9200/_cat/indices?v' 
+health status index uuid                   pri rep docs.count docs.deleted store.size pri.store.size 
+green  open   ind-1 EdE_IEKCStGTft2ekiGWcA   1   0          0            0       225b           225b 
+yellow open   ind-3 BmKVbRsERQ6mGIjcLIFKig   4   2          0            0       900b           900b 
+yellow open   ind-2 Km_nvfwpTgmjR4M2CcmVNw   2   1          0            0       450b           450b 
+```
+  
+получаем состояние всего кластера через API:
+```
+sania@sania-vb:~$ curl -X GET "localhost:9200/_cluster/health?pretty" 
+{ 
+  "cluster_name" : "elasticsearch", 
+  "status" : "yellow", 
+  "timed_out" : false, 
+  "number_of_nodes" : 1, 
+  "number_of_data_nodes" : 1, 
+  "active_primary_shards" : 8, 
+  "active_shards" : 8, 
+  "relocating_shards" : 0, 
+  "initializing_shards" : 0, 
+  "unassigned_shards" : 10, 
+  "delayed_unassigned_shards" : 0, 
+  "number_of_pending_tasks" : 0, 
+  "number_of_in_flight_fetch" : 0, 
+  "task_max_waiting_in_queue_millis" : 0, 
+  "active_shards_percent_as_number" : 44.44444444444444 
+} 
 ```
 
-сразу даём ему имя:
+в подавляющем большинстве случаев причина статуса yellow - возможная нехватка места/ресурсов. а ещё у наших индексов указано число реплик, а по факту нет других серверов, соответствено, реплицировать некуда.  
+  
+удаляем все индексы:  
 ```
-mysql> ALTER USER 'test'@'localhost' ATTRIBUTE '{"fname":"James", "lname":"Pretty"}';
-	Query OK, 0 rows affected (0.02 sec)
-```	
-
-настраиваем атрибуты:
-```	
-mysql> ALTER USER 'test'@'localhost'
-	-> IDENTIFIED BY 'test-pass'
-	-> WITH
-	-> MAX_QUERIES_PER_HOUR 100
-	-> PASSWORD EXPIRE INTERVAL 180 DAY
-	-> FAILED_LOGIN_ATTEMPTS 3 PASSWORD_LOCK_TIME 2;
-		Query OK, 0 rows affected (0.01 sec)
-```	
-
-предоставляем привилегии пользователю test на SELECT в БД test_db:
+sania@sania-vb:~$ curl -X DELETE 'http://localhost:9200/ind-1?pretty'  
+{ 
+  "acknowledged" : true 
+} 
+sania@sania-vb:~$ curl -X DELETE 'http://localhost:9200/ind-2?pretty'  
+{ 
+  "acknowledged" : true 
+} 
+sania@sania-vb:~$ curl -X DELETE 'http://localhost:9200/ind-3?pretty'  
+{ 
+  "acknowledged" : true 
+} 
 ```
-	mysql> GRANT Select ON test_db.orders TO 'test'@'localhost';
-		Query OK, 0 rows affected, 1 warning (0.02 sec)
-```	
-
-выполняем запрос из таблички:
-```
-mysql> SELECT * FROM INFORMATION_SCHEMA.USER_ATTRIBUTES WHERE USER='test';
-	+-------+-----------+---------------------------------------+
-	| USER 	| HOST      | ATTRIBUTE                             |
-	+-------+-----------+---------------------------------------+
-	| test  | localhost | {"fname": "James", "lname": "Pretty"} |
-	+-------+-----------+---------------------------------------+
-	1 row in set (0.00 sec)
-```		
-
-
+  
+  
 ## задача 3
-
-устанавливаем профилирование (позволяет узнать, какими запросами формируется страница и сколько времени на это уходит) SET profiling = 1:
+  
+директорию для бэкапов мы создали в /var/lib/elasticsearch/snapshots. регистрируем данную директорию как snapshot repository c именем netology_backup:
 ```
-mysql> SET profiling = 1;
-	Query OK, 0 rows affected, 1 warning (0.00 sec)
-```	
-
-узнаём, какой engine используется в табличке нашей test_db:
+[root@a248d4e474f3 /]# echo path.repo: [ "/var/lib/elasticsearch/snapshots" ] >> "$ES_HOME/config/elasticsearch.yml" 
+[root@a248d4e474f3 /]# chown elasticsearch:elasticsearch /var/lib/elasticsearch/snapshots 
+[root@a248d4e474f3 /]# exit 
+sania@sania-vb:~$ docker restart elastic 
+elastic 
+  
+sania@sania-vb:~$ curl -X PUT "localhost:9200/_snapshot/netology_backup?pretty" -H 'Content-Type: application/json' -d' {"type": "fs", "settings": {"location": "/var/lib/elasticsearch/snapshots", "compress": true}}' 
+{ 
+  "acknowledged" : true 
+} 
 ```
-mysql> SELECT TABLE_NAME, ENGINE FROM information_schema.TABLES WHERE table_name = 'orders' and TABLE_SCHEMA = 'test_db';
-	+------------+--------+
-	| TABLE_NAME | ENGINE |
-	+------------+--------+
-	| orders     | InnoDB |
-	+------------+--------+
-	1 row in set (0.00 sec)
+  
+проверяем, что всё ок:
+```
+sania@sania-vb:/$ curl -X GET 'localhost:9200/_snapshot/netology_backup?pretty' 
+{ 
+  "netology_backup" : { 
+    "type" : "fs", 
+    "settings" : { 
+      "compress" : "true", 
+      "location" : "/var/lib/elasticsearch/snapshots" 
+    } 
+  } 
+} 
+```
+  
+создаём индекс test без реплик и 1 шардой:
+```
+sania@sania-vb:/$ curl -X PUT "localhost:9200/test?pretty" -H 'Content-Type: application/json' -d' {"settings": {"number_of_shards": 1, "number_of_replicas": 0}}' 
+{ 
+  "acknowledged" : true, 
+  "shards_acknowledged" : true, 
+  "index" : "test" 
+} 
+```
+  
+приводим список индексов:
+```
+sania@sania-vb:/$ curl 'localhost:9200/_cat/indices?v' 
+health status index uuid                   pri rep docs.count docs.deleted store.size pri.store.size 
+green  open   test  NIoKi2RZQNejf3Dixc3d0w   1   0          0            0       225b           225b 
+```
+  
+создаём snapshot состояния нашего кластера Elasticsearch:
+```
+sania@sania-vb:/$ curl -X PUT "localhost:9200/_snapshot/netology_backup/snapshot_1?wait_for_completion=true&pretty" 
+{ 
+  "snapshot" : { 
+    "snapshot" : "snapshot_1", 
+    "uuid" : "rVkwuXEAR-CF5xl0J99qsw", 
+    "repository" : "netology_backup", 
+    "version_id" : 8000199, 
+    "version" : "8.0.1", 
+    "indices" : [ 
+      ".geoip_databases", 
+      "test" 
+    ], 
+    "data_streams" : [ ], 
+    "include_global_state" : true, 
+    "state" : "SUCCESS", 
+    "start_time" : "2022-03-19T18:46:21.912Z", 
+    "start_time_in_millis" : 1647715581912, 
+    "end_time" : "2022-03-19T18:46:23.112Z", 
+    "end_time_in_millis" : 1647715583112, 
+    "duration_in_millis" : 1200, 
+    "failures" : [ ], 
+    "shards" : { 
+      "total" : 2, 
+      "failed" : 0, 
+      "successful" : 2 
+    }, 
+    "feature_states" : [ 
+      { 
+        "feature_name" : "geoip", 
+        "indices" : [ 
+          ".geoip_databases" 
+        ] 
+      } 
+    ] 
+  } 
+} 
+```
+  
+приводим список файлов в директории со снэпшотами:
+```
+sania@sania-vb:/$ docker exec -it elastic ls -l /var/lib/elasticsearch/snapshots/ 
+total 36 
+-rw-r--r-- 1 elasticsearch elasticsearch   843 Mar 19 18:46 index-0 
+-rw-r--r-- 1 elasticsearch elasticsearch     8 Mar 19 18:46 index.latest 
+drwxr-xr-x 4 elasticsearch elasticsearch  4096 Mar 19 18:46 indices 
+-rw-r--r-- 1 elasticsearch elasticsearch 17522 Mar 19 18:46 meta-rVkwuXEAR-CF5xl0J99qsw.dat 
+-rw-r--r-- 1 elasticsearch elasticsearch   354 Mar 19 18:46 snap-rVkwuXEAR-CF5xl0J99qsw.dat 
+```
+  
+удаляем наш индекс test и создаём индекс test-2:
+```
+sania@sania-vb:/$ curl -X DELETE 'localhost:9200/test?pretty' 
+{ 
+  "acknowledged" : true 
+} 
+  
+sania@sania-vb:/$ curl -X PUT localhost:9200/test-2?pretty -H 'Content-Type: application/json' -d'{ "settings": { "number_of_shards": 1,  "number_of_replicas": 0 }}' 
+{ 
+  "acknowledged" : true, 
+  "shards_acknowledged" : true, 
+  "index" : "test-2" 
+} 
 ```
 
-пробуем изменить engine и приводим время выполнения в ответе:
+проверяем, что выводится теперь по индексам:
 ```
-mysql> ALTER TABLE orders ENGINE = MyISAM;
-	Query OK, 5 rows affected (0.10 sec)
-	Records: 5  Duplicates: 0  Warnings: 0
-```
-
-```	
-mysql> ALTER TABLE orders ENGINE = INNODB;
-	Query OK, 5 rows affected (0.12 sec)
-	Records: 5  Duplicates: 0  Warnings: 0
+sania@sania-vb:/$ curl 'localhost:9200/_cat/indices?pretty' 
+green open test-2 94fSOMTVRKeWWvw4tpQH7g 1 0 0 0 225b 225b 
 ```
 
-```		
-mysql> SHOW PROFILES;
-+----------+------------+--------------------------------------------------------------------------------------------------------------------+
-| Query_ID | Duration   | Query                                                                                                              |
-+----------+------------+--------------------------------------------------------------------------------------------------------------------+
-|  1       | 0.00158375 | SELECT TABLE_NAME, ENGINE FROM information_schema.TABLES WHERE table_name = 'orders' and TABLE_SCHEMA = 'test_db'  |
-|  2       | 0.10500350 | ALTER TABLE orders ENGINE = MyISAM                                                                                 |
-|  3       | 0.11157125 | ALTER TABLE orders ENGINE = INNODB                                                                                 |
-+----------+------------+--------------------------------------------------------------------------------------------------------------------+
-3 rows in set, 1 warning (0.00 sec)
+восстанавливаем состояние кластера elasticsearch из снэпшота, созданного ранее:
 ```
-на MyISAM переключились за 0.105 секунд;
-на INNODB переключились за 0.111 секунд.
-
-
-## задача 4
-
+sania@sania-vb:/$ curl -X POST "localhost:9200/_snapshot/netology_backup/snapshot_1/_restore?pretty" -H 'Content-Type: application/json' -d' {"indices": "*", "include_global_state": true}' 
+{ 
+  "accepted" : true 
+} 
 ```
-sania@sania-vb:/etc/mysql$ cat my.cnf
-	!includedir /etc/mysql/conf.d/
-	!includedir /etc/mysql/mysql.conf.d/
-	
-	[mysqld]
-	pid-file        = /var/run/mysqld/mysqld.pid
-	socket          = /var/run/mysqld/mysqld.sock
-	datadir         = /var/lib/mysql
-	secure-file-priv= NULL
-	
-	#Set IO Speed
-	# 0 - скорость
-	# 1 - сохранность
-	# 2 - универсальный параметр
-	innodb_flush_log_at_trx_commit = 0 
-	
-	#Set compression
-	#Barracuda - формат файла с сжатием
-	innodb_file_format=Barracuda
-	
-	#Set buffer
-	innodb_log_buffer_size	= 1M
-	
-	#Set Cache size
-	key_buffer_size = 640М
-	
-	#Set log size
-	max_binlog_size	= 100M
+
+проверяем индексы после восстановления:
+```
+sania@sania-vb:/$ curl 'localhost:9200/_cat/indices?pretty' 
+green open test-2 94fSOMTVRKeWWvw4tpQH7g 1 0 0 0 225b 225b 
+green open test   _jgQnGAXRhiyT8aChXvxqA 1 0 0 0 225b 225b 
 ```
