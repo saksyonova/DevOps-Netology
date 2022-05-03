@@ -38,14 +38,14 @@ sania@sania-vb:/opt/sonar-scanner$ sonar-scanner -v
 	INFO: Linux 5.13.0-40-generic amd64  
 ```
 
-5. прогоняем файлик с кодом через сканнер с дополнительным ключом:
+5. прогоняем файлик с кодом через сканнер с дополнительным ключом -Dsonar.coverage.exclusions=fail.py:
 ```
 sania@sania-vb:~$ sonar-scanner \  
 -Dsonar.projectKey=saksyonova \  
 -Dsonar.sources=. \  
 -Dsonar.host.url=http://localhost:9000 \  
 -Dsonar.login=28e128236568ba4f9d3f25fd9c533abedad7066c \  
-**-Dsonar.coverage.exclusions=fail.py**  
+-Dsonar.coverage.exclusions=fail.py 
 ```
   
 6. переходим в интерфейс:
@@ -108,4 +108,4 @@ sania@sania-vb:~$ mvn --version
 3. в директории ~/.m2/repository/netology/java/8_282 появляется нужный артефакт:
 ![mvn](https://i.ibb.co/kmtmqN0/Untitled-picture3.png)
 
-[ссылка pom.xml](https://github.com/saksyonova/DevOps-Netology/blob/main/pom.xml)
+[ссылка на исправленный pom.xml](https://github.com/saksyonova/DevOps-Netology/blob/main/pom.xml)
